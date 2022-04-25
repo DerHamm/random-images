@@ -182,9 +182,7 @@ Test the generation of an image
 
 def main2():
     # USED_STRATEGY = RandomColorsPercentagePattern()
-
     strats = [RandomColorsPercentagePattern()]
-
     address = Address(2)
     rand_bytes = list(address().address)
     random_cycler = itertools.cycle(rand_bytes)
@@ -198,7 +196,7 @@ def main2():
 Hamm-Xorshift implementation testing
 """
 
-
+"""
 def main1():
     x = XorRandom()
     x.seed(md5(__name__.encode()).digest())
@@ -210,23 +208,22 @@ def main1():
     print(x.random())
     print(xx.random())
     print(xxx.random())
-
+"""
 
 """
 Testing the object model and procedural generation
 """
 
-
+"""
 def main3():
     img = RandomImage("XXXQ=§)MMKMFASPMDPASMDPXX")
-
     seeds = list()
     for pattern in img.patterns:
         print(hex(int.from_bytes(pattern.seed, 'big')))
         seeds.append(pattern.seed)
         for pixel in pattern.pixels:
             seeds.append(pixel.seed)
-
+"""
 
 if __name__ == '__main__':
     main2()
