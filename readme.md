@@ -18,7 +18,8 @@ You can add instances of a strategy in the list `strats`. For each strategy, one
 
 ```python
 def main():
-    from app import RandomColorsPercentagePattern, Address, ImageView
+    from app import RandomColorsPercentagePattern, ImageView
+    from src.random_sources.address import Address
     import itertools
     # USED_STRATEGY = RandomColorsPercentagePattern()
     strats = [RandomColorsPercentagePattern()]

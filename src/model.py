@@ -15,9 +15,7 @@ the image seed, which will be the Images 'theme'.
 """
 
 
-# TODO: Implement iterator over image, so that you can do ```for pattern in image:```
-# TODO: Implement iterator over pattern so that you can do ```for pixel in pattern:``
-# TODO: Naive appraoch: Implement __iter__ in Image and Pattern
+# TODO: Implement Patterns and Pixel as Iterables
 
 class RandomImage(object):
     SIZE = 16
