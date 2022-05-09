@@ -16,7 +16,6 @@ the image seed, which will be the Images 'theme'.
 
 
 # TODO: Implement Patterns and Pixel as Iterables
-
 class RandomImage(object):
     SIZE = 16
 
@@ -41,3 +40,11 @@ class RandomImage(object):
             r = str(random.random())
             self.seed = md5(r.encode()).digest()
             self.parent_seed = parent_seed
+
+
+class Pattern(object):
+    def draw(self, *args, **kwargs):
+        raise NotImplementedError()
+
+
+
