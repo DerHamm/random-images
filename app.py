@@ -1,5 +1,7 @@
 from src.pixel_iterator_strategies.strategies import XorRandom
 
+# TODO: Try and see if you can run this project with PyScript
+
 # TODO: Implement a PCG instead of XorShift for further experimentation
 # TODO: Update the project's README
 # TODO: Create a UnitTest-Suite based around the RandomProvider class and find a way to test all algos with that class
@@ -15,7 +17,7 @@ from src.pixel_iterator_strategies.strategies import XorRandom
 
 IMAGE_SIZE = (1280, 720)
 random = XorRandom()
-random.seed("http¯\_(ツ)_/¯¯\_(ツ)_/¯¯\_(ツ)_/¯YEET_8¯\_(ツ)_/¯¯\_(ツ)_/¯¯\_(ツ)_/¯¯\_(ツ)_/¯¯\_(ツ)_/¯//wwwyw")
+random.seed("http¯\_(ツ)_/¯¯\_(ツ)_/¯¯\_((ツ)_/¯//wwwyw")
 
 # IMAGE_SIZE = (1920, 1280)
 
@@ -23,26 +25,16 @@ random.seed("http¯\_(ツ)_/¯¯\_(ツ)_/¯¯\_(ツ)_/¯YEET_8¯\_(ツ)_/¯¯\_(
 Test the generation of an image
 """
 
+# TODO: Colors do not use the origin seed, fix this!
+from src.artworks import PietMondrian
 def main():
 
-    from src.artworks import art
-    b = list()
-    for artwork in art:
-        img = artwork(rng=random)
-        print("created {}".format(artwork.__name__))
-        img.draw()
-        print("drawn")
-        img.show()
-        print("shown")
-
-        if input("bad?") == "y":
-            b.append(artwork.__name__)
-    print(b)
+    image = PietMondrian(rng=random, min_diff=4)
+    image.draw()
+    image.show()
 
 
 
 
 if __name__ == '__main__':
-
-
     main()

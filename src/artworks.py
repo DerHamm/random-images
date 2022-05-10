@@ -1,9 +1,11 @@
 from PIL import Image, PyAccess, ImageDraw
-from src.random_colors import random_palette, random_color_from_palette
+from src.random_colors import RandomColors
 import seaborn as sns
+from pathlib import Path
+from os import system
 
 __all__ = ['AddCoords', 'AndCoords', 'Artwork', 'CoordinateMagics', 'ModCoords', 'OrCoords', 'PietMondrian',
-           'SubCoordsXFromY', 'SubCoordsYFromX', 'XorCoords']
+           'SubCoordsYFromX', 'XorCoords']
 
 
 def hex_to_rgb(h):
@@ -39,11 +41,10 @@ class Artwork(object):
         return self.image.save(path, 'PNG')
 
     def show(self):
-        # TODO: Replace this path
-        path = 'img\\tmp.png'
+        # TODO: Replace this path?
+        path = Path('img\\tmp.png').absolute()
         self.image.save(path)
-        import webbrowser
-        webbrowser.open(path)
+        system(str(path))
 
     def draw(self):
         raise NotImplementedError('Each pattern has to implement it\'s own unique image')
@@ -52,6 +53,7 @@ class Artwork(object):
 class PietMondrian(Artwork):
     def __init__(self, chance_for_background_color=5 / 8, subdivisions=40000, min_diff=16, sep=1, splits=None, edge=10,
                  *args, **kwargs):
+
         super().__init__(*args, **kwargs)
 
         # iterations for the splitting loop
@@ -76,8 +78,9 @@ class PietMondrian(Artwork):
         # Border thiccness
         self.edge = edge
 
-        self.palette = sns.color_palette(random_palette(), 16).as_hex()
-        self.random_color = lambda: hex_to_rgb(random_color_from_palette(self.palette))
+        self.random_colors = RandomColors(self.rng)
+        self.palette = sns.color_palette(self.random_colors.random_palette(), 16).as_hex()
+        self.random_color = lambda: hex_to_rgb(self.random_colors.random_color_from_palette(self.palette))
         self.theme = self.random_color()
         self.chance = chance_for_background_color
 
@@ -133,9 +136,10 @@ class PietMondrian(Artwork):
 class CoordinateMagics(Artwork):
     def __init__(self, chance=0.5, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.random_colors = RandomColors(self.rng)
         self.chance = chance
-        self.palette = sns.color_palette(random_palette(), 16).as_hex()
-        self.random_color = lambda: hex_to_rgb(random_color_from_palette(self.palette))
+        self.palette = sns.color_palette(self.random_colors.random_palette(), 16).as_hex()
+        self.random_color = lambda: hex_to_rgb(self.random_colors.random_color_from_palette(self.palette))
         self.theme = self.random_color()
 
     def operation(self, x, y):
@@ -170,11 +174,6 @@ class AddCoords(CoordinateMagics):
         return x + y
 
 
-class SubCoordsXFromY(CoordinateMagics):
-    def operation(self, x, y):
-        return abs(x - y)
-
-
 class SubCoordsYFromX(CoordinateMagics):
     def operation(self, x, y):
         return abs(y - x)
@@ -190,6 +189,5 @@ art = classes = [AddCoords,
                  ModCoords,
                  OrCoords,
                  PietMondrian,
-                 SubCoordsXFromY,
                  SubCoordsYFromX,
                  XorCoords]
