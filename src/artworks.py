@@ -2,14 +2,33 @@ from PIL import Image, PyAccess, ImageDraw
 from src.random_colors import RandomColors
 import seaborn as sns
 from pathlib import Path
-from os import system
+from os import system, mkdir
+from os.path import isdir
+from threading import Thread
+from itertools import cycle
 
 __all__ = ['AddCoords', 'AndCoords', 'Artwork', 'CoordinateMagics', 'ModCoords', 'OrCoords', 'PietMondrian',
            'SubCoordsYFromX', 'XorCoords']
 
+IMAGE_VIEW_APPLICATION = 'paintdotnet'
+
 
 def hex_to_rgb(h):
     return tuple(int(h[1:][i:i + 2], 16) for i in (0, 2, 4))
+
+
+def setup():
+    if not isdir('img'):
+        try:
+            mkdir('img')
+        except Exception as e:
+            print(e)
+            return False
+    return True
+
+
+if not setup():
+    quit(2)
 
 
 class Artwork(object):
@@ -20,15 +39,24 @@ class Artwork(object):
     DEFAULT_COLOR = (255, 255, 255, 255)
     DEFAULT_SIZE = (640, 480)
 
-    def __init__(self, rng, image: Image = None):
+    def __init__(self, rng, image: Image = None, default_color=None):
         self._image = image
         self._pixels = None
+        self._default_color = default_color
         self.rng = rng
+
+    @property
+    def default_color(self):
+        return self.__class__.DEFAULT_COLOR if self._default_color is None else self._default_color
+
+    @default_color.setter
+    def default_color(self, value):
+        self._default_color = value
 
     @property
     def image(self):
         if self._image is None:
-            self._image = Image.new(Artwork.DEFAULT_MODE, Artwork.DEFAULT_SIZE, Artwork.DEFAULT_COLOR)
+            self._image = Image.new(Artwork.DEFAULT_MODE, Artwork.DEFAULT_SIZE, self.default_color)
         return self._image
 
     @property
@@ -44,7 +72,7 @@ class Artwork(object):
         # TODO: Replace this path?
         path = Path('img\\tmp.png').absolute()
         self.image.save(path)
-        system(str(path))
+        Thread(target=lambda: system('{app} {path}'.format(app=IMAGE_VIEW_APPLICATION, path=path)), daemon=True).start()
 
     def draw(self):
         raise NotImplementedError('Each pattern has to implement it\'s own unique image')
@@ -68,7 +96,8 @@ class PietMondrian(Artwork):
 
         # Piet Mondrian Color Palette = (38, 71, 124), (240, 217, 92), (162, 45, 40) + (223, 224, 236)
         # Subdivision adjustment
-        # Determines the ratio of the split on a rectangle. Using other split values might result in funny/unexpected stuff
+        # Determines the ratio of the split on a rectangle.
+        # Using other split values might result in funny/unexpected stuff
         if splits is None:
             self.splits = [.5, 1, 1.5]
         else:
@@ -184,10 +213,57 @@ class ModCoords(CoordinateMagics):
         return x % max(1, y)
 
 
+class RecursiveQuads(Artwork):
+    DEFAULT_COLOR = None
+
+    def __init__(self, chance=0.5, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.random_colors = RandomColors(self.rng)
+        self.chance = chance
+        self.palette = sns.color_palette(self.random_colors.random_palette(), 16).as_hex()
+        self.random_color = lambda: hex_to_rgb(self.random_colors.random_color_from_palette(self.palette))
+        self.theme = self.random_color()
+        self.default_color = self.theme
+
+    def draw(self):
+        draw = ImageDraw.Draw(self.image)
+        w = self.image.size[0]
+        h = self.image.size[1]
+
+        size_w = w / 100
+        size_h = h / 100
+
+        mid_x = w / 2
+        mid_y = h / 2
+
+        x1 = mid_x - size_w
+        y1 = mid_y - size_h
+        x2 = mid_x + size_w
+        y2 = mid_y + size_h
+
+        step_w = size_w
+        step_h = size_h
+
+        count = 0
+
+        colors = cycle(self.palette)
+
+        while x1 < w and y1 < h and x2 > 0 and y2 > 0:
+            x1 += step_w
+            y1 += step_h
+            x2 -= step_w
+            y2 -= step_h
+            rect = (x1, y1, x2, y2)
+            if count > 0:
+                draw.rectangle(rect, outline=next(colors))
+            count += 1
+
+
 art = classes = [AddCoords,
                  AndCoords,
                  ModCoords,
                  OrCoords,
                  PietMondrian,
                  SubCoordsYFromX,
-                 XorCoords]
+                 XorCoords,
+                 RecursiveQuads]
