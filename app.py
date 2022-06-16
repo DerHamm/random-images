@@ -1,10 +1,8 @@
 from src.algos.hammi_xorshift import XorRandom
-from src.artworks import PietMondrian, RecursiveQuads
+from src.artworks import PietMondrian
 
 # TODO: Try and see if you can run this project with PyScript
-
 # TODO: Implement a PCG instead of XorShift for further experimentation
-# TODO: Update the project's README
 # TODO: Create a UnitTest-Suite based around the RandomProvider class and find a way to test all algos with that class
 # TODO: Accept command line args here and start doing stuff
 # Options to consider:
@@ -16,10 +14,8 @@ from src.artworks import PietMondrian, RecursiveQuads
 - Generate Test Data (length, algo_used) (This is probably obsolete because the test frameworks accept streams)
 """
 
-IMAGE_SIZE = (1280, 720)
-
 random = XorRandom()
-random.seed("http¯\_(ツ)_/¯¯\_(ツ)_/¯¯\_((ツ)bnvbb_/¯//wwwyw")
+random.seed("welchen random seed soll ich nehmen?")
 
 # IMAGE_SIZE = (1920, 1280)
 
@@ -29,7 +25,7 @@ Test the generation of an image
 
 
 def main():
-    image = PietMondrian(rng=random)
+    image = PietMondrian(rng=random, min_diff=4)
     image.draw()
     image.show()
 
