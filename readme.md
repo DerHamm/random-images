@@ -8,7 +8,7 @@ One of the first goals of this project was to implement a custom random generato
 
 This was done by implementing my own version `XorShift`, that adds an extra step to the calculation. I also created a 
 `Random` interface similar to the native Python interface, so that other generated can be added easily. A plan for the
-future is to implement a derivative of [pcg-random][] in Python this project.
+future is to implement a derivative of [pcg-random](https://www.pcg-random.org/) in Python this project.
 
 Another goal was to fully understand seeding of PRNGs. For this, a class `Address` was created, which can generate
 Ethereum Addresses. Furthermore, I explored different techniques of seeding. For now, I'm deriving  a `md5`-Hash of the
@@ -26,9 +26,9 @@ The project will probably never reach another stage of development as I exhauste
 for image processing. I came to the conclusion, that libraries like PIL/Pillow lack support for certain Features I want.
 Because of this, the development of this project will soon move to another language and tech stack.
 
-Two possible technologies are [processing][] and [nannou][]. 
+Two possible technologies are [processing](https://processing.org/) and [nannou](https://nannou.cc/). 
 
-Another possibility is to use [PyScript][] to draw the images onto HTML-Canvasses.
+Another possibility is to use [PyScript](https://pyscript.net/) to draw the images onto HTML-Canvasses.
 
 ## Artworks
 
@@ -80,10 +80,3 @@ whole gallery, if you just provide a .json-file, that maps Artwork-Names with se
   "MyArtwork": ["someOtherSeed"]
 }
 ```
-
-
-[pcg-random]: [https://www.pcg-random.org/]
-[processing]: [https://processing.org/]
-[nannou]: [https://nannou.cc/]
-[PyScript]: [https://pyscript.net/]
-
