@@ -1,3 +1,5 @@
+import math
+
 from PIL import Image, PyAccess, ImageDraw
 from src.random_colors import RandomColors
 import seaborn as sns
@@ -17,6 +19,12 @@ def hex_to_rgb(h):
     return tuple(int(h[1:][i:i + 2], 16) for i in (0, 2, 4))
 
 
+def rect_size(point1, point2, point3, point4):
+    width = math.sqrt(math.pow((point2[0] - point1[0]), 2) + math.pow((point2[1] - point1[1]), 2))
+    length = math.sqrt(math.pow((point4[0] - point3[0]), 2) + math.pow((point4[1] - point3[1]), 2))
+    return width * length
+
+
 def setup():
     if not isdir('img'):
         try:
@@ -31,16 +39,62 @@ if not setup():
     quit(2)
 
 
+class Canvas(object):
+    """ Canvas needs to implement some image """
+
+    @staticmethod
+    def new(*args, **kwargs):
+        """ Initialize a new image """
+        raise NotImplementedError()
+
+    def load(self):
+        """ Return the pixel array """
+        raise NotImplementedError()
+
+    def save(self, *args, **kwargs):
+        """ Save the image to disk """
+        raise NotImplementedError()
+
+    def rotate(self, *args, **kwargs):
+        """ Rotate image """
+        raise NotImplementedError()
+
+
+class PillowCanvas(Canvas):
+
+    def __init__(self, mode, size, color=0):
+        self.image = PillowCanvas.new(mode, size, color=color)
+        self._size = size
+
+    @staticmethod
+    def new(mode, size, color=0):
+        return Image.new(mode, size, color=color)
+
+    def load(self):
+        return self.image.load()
+
+    def save(self, fp, _format=None, **kwargs):
+        self.image.save(fp, format=_format, **kwargs)
+
+    @property
+    def size(self):
+        return self._size
+
+    def rotate(self, *args, **kwargs):
+        self.image.rotate(*args, **kwargs)
+
+
 class Artwork(object):
-    _image: Image
+    _canvas: Image
     _pixels: PyAccess
 
+    CANVAS_CLASS = PillowCanvas
     DEFAULT_MODE = 'RGBA'
     DEFAULT_COLOR = (255, 255, 255, 255)
     DEFAULT_SIZE = (640, 480)
 
-    def __init__(self, rng, image: Image = None, default_color=None):
-        self._image = image
+    def __init__(self, rng, canvas: Canvas = None, default_color=None):
+        self._canvas = canvas
         self._pixels = None
         self._default_color = default_color
         self.rng = rng
@@ -54,24 +108,24 @@ class Artwork(object):
         self._default_color = value
 
     @property
-    def image(self):
-        if self._image is None:
-            self._image = Image.new(Artwork.DEFAULT_MODE, Artwork.DEFAULT_SIZE, self.default_color)
-        return self._image
+    def canvas(self):
+        if self._canvas is None:
+            self._canvas = Artwork.CANVAS_CLASS(Artwork.DEFAULT_MODE, Artwork.DEFAULT_SIZE, self.default_color)
+        return self._canvas
 
     @property
     def pixels(self):
         if self._pixels is None:
-            self._pixels = self.image.load()
+            self._pixels = self.canvas.load()
         return self._pixels
 
     def save(self, path):
-        return self.image.save(path, 'PNG')
+        return self.canvas.save(path, 'PNG')
 
     def show(self):
         # TODO: Replace this path?
         path = Path('img\\tmp.png').absolute()
-        self.image.save(path)
+        self.canvas.save(path)
         Thread(target=lambda: system('{app} {path}'.format(app=IMAGE_VIEW_APPLICATION, path=path)), daemon=True).start()
 
     def draw(self):
@@ -121,10 +175,10 @@ class PietMondrian(Artwork):
         min_diff = self.min_diff
 
         random = self.rng
-        w = self.image.size[0]
-        h = self.image.size[1]
+        w = self.canvas.size[0]
+        h = self.canvas.size[1]
 
-        draw = ImageDraw.Draw(self.image)
+        draw = ImageDraw.Draw(self.canvas.image)
 
         rectangles = [[(edge, edge), (w - edge, edge), (w - edge, h - edge), (edge, h - edge)]]
 
@@ -144,7 +198,9 @@ class PietMondrian(Artwork):
                     x_split = (rx - lx) / 2 * split + lx
 
                     rectangles.pop(index)
+
                     rectangles.append([(lx, ly), (x_split - sep, ly), (x_split - sep, ry), (lx, ry)])
+
                     rectangles.append([(x_split + sep, ly), (rx, ly), (rx, ry), (x_split + sep, ry)])
 
             else:
@@ -177,10 +233,79 @@ class CoordinateMagics(Artwork):
     def draw(self):
         pixels = self.pixels
         rng = self.rng
-        for x in range(self.image.size[0]):
-            for y in range(self.image.size[1]):
+        for x in range(self.canvas.size[0]):
+            for y in range(self.canvas.size[1]):
                 rng.seed(self.operation(x, y))
                 pixels[x, y] = self.random_color() if rng.random() > self.chance else self.theme
+
+
+class CubicDisarray(Artwork):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def draw(self):
+        def _draw(_canvas, width, height):
+            _canvas.rectangle((-width / 2, -height / 2, width, height), fill=(0, 0, 0))
+
+        size = 320
+        displacement = 15
+        rotation_factor = 20
+        offset = 10
+        square_size = 30
+
+        canvas = ImageDraw.Draw(self.canvas)
+
+        for i in range(square_size, size - square_size, square_size):
+            for j in range(square_size, size - square_size, square_size):
+                sign = -1 if self.rng.random() > 0.5 else 1
+                rotate_amt = j / size * sign * self.rng.random() * rotation_factor
+                sign = -1 if self.rng.random() > 0.5 else 1
+                translate_amt = j / size * sign * self.rng.random() * displacement
+
+                # self.image.transform((i + translate_amt + offset, j + offset))
+                self.canvas.rotate(rotate_amt, translate=(i + translate_amt + offset, j + offset))
+                _draw(canvas, square_size, square_size)
+
+        """
+        var canvas = document.querySelector('canvas');
+        var context = canvas.getContext('2d');
+        
+        var size = 320;
+        var dpr = window.devicePixelRatio;
+        canvas.width = size * dpr;
+        canvas.height = size * dpr;
+        context.scale(dpr, dpr);
+        context.lineWidth = 2;
+        
+        var randomDisplacement = 15;
+        var rotateMultiplier = 20;
+        var offset = 10;
+        var squareSize = 30;
+        
+        function draw(width, height) {
+          context.beginPath();
+          context.rect(-width/2, -height/2, width, height);
+          context.stroke(); 
+        }
+        
+        for(var i = squareSize; i <= size - squareSize; i += squareSize) {
+          for(var j = squareSize; j <= size - squareSize; j+= squareSize) {
+            var plusOrMinus = Math.random() < 0.5 ? -1 : 1;
+            var rotateAmt = j / size * Math.PI / 180 * plusOrMinus * Math.random() * rotateMultiplier;
+        
+            plusOrMinus = Math.random() < 0.5 ? -1 : 1;
+            var translateAmt = j / size * plusOrMinus * Math.random() * randomDisplacement;
+              
+            context.save();
+            context.translate(i + translateAmt + offset, j + offset);
+            context.rotate(rotateAmt);
+            draw(squareSize, squareSize);
+            context.restore();
+          }
+        }
+
+
+        """
 
 
 class XorCoords(CoordinateMagics):
@@ -226,9 +351,9 @@ class RecursiveQuads(Artwork):
         self.default_color = self.theme
 
     def draw(self):
-        draw = ImageDraw.Draw(self.image)
-        w = self.image.size[0]
-        h = self.image.size[1]
+        draw = ImageDraw.Draw(self.canvas.image)
+        w = self.canvas.size[0]
+        h = self.canvas.size[1]
 
         size_w = w / 100
         size_h = h / 100

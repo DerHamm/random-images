@@ -1,4 +1,5 @@
-from src.pixel_iterator_strategies.strategies import XorRandom
+from src.algos.hammi_xorshift import XorRandom
+from src.artworks import PietMondrian, RecursiveQuads
 
 # TODO: Try and see if you can run this project with PyScript
 
@@ -16,8 +17,9 @@ from src.pixel_iterator_strategies.strategies import XorRandom
 """
 
 IMAGE_SIZE = (1280, 720)
+
 random = XorRandom()
-random.seed("http¯\_(ツ)_/¯¯\_(ツ)_/¯¯\_((ツ)_/¯//wwwyw")
+random.seed("http¯\_(ツ)_/¯¯\_(ツ)_/¯¯\_((ツ)bnvbb_/¯//wwwyw")
 
 # IMAGE_SIZE = (1920, 1280)
 
@@ -25,15 +27,11 @@ random.seed("http¯\_(ツ)_/¯¯\_(ツ)_/¯¯\_((ツ)_/¯//wwwyw")
 Test the generation of an image
 """
 
-# TODO: Colors do not use the origin seed, fix this!
-from src.artworks import PietMondrian
-def main():
 
-    image = PietMondrian(rng=random, min_diff=4)
+def main():
+    image = PietMondrian(rng=random)
     image.draw()
     image.show()
-
-
 
 
 if __name__ == '__main__':

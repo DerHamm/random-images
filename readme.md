@@ -46,14 +46,17 @@ Some really simple example on how to implement your own artwork:
 ```python
 from src.artworks import Artwork
 from PIL import ImageDraw
+
+
 class DemoArtwork(Artwork):
     """ Just some demo artwork for the docs """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def draw(self):
         # draw something here
-        draw = ImageDraw.Draw(self.image)
+        draw = ImageDraw.Draw(self.canvas)
         if self.rng.random() > 0.5:
             draw.line((self.rng.randint(0, 600), 0, 40, 60))
         else:
