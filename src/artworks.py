@@ -10,7 +10,7 @@ from threading import Thread
 from itertools import cycle
 
 __all__ = ['AddCoords', 'AndCoords', 'Artwork', 'CoordinateMagics', 'ModCoords', 'OrCoords', 'PietMondrian',
-           'SubCoordsYFromX', 'XorCoords']
+           'SubCoordsYFromX', 'XorCoords', 'art', 'RecursiveQuads']
 
 IMAGE_VIEW_APPLICATION = 'paintdotnet'
 

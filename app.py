@@ -1,5 +1,7 @@
 from src.algos.hammi_xorshift import XorRandom
 from src.artworks import PietMondrian
+from src.cli import CommandlineRunner
+from sys import argv
 
 # TODO: Try and see if you can run this project with PyScript
 # TODO: Implement a PCG instead of XorShift for further experimentation
@@ -25,9 +27,10 @@ Test the generation of an image
 
 
 def main():
-    image = PietMondrian(rng=random, min_diff=4)
-    image.draw()
-    image.show()
+    command_line_arguments = argv[1::]
+    cli = CommandlineRunner(*command_line_arguments)
+    cli.run()
+
 
 
 if __name__ == '__main__':

@@ -19,8 +19,8 @@ Another topic explored here are colors and color palettes in combination with ra
 How to choose harmonic random colors within a piece of generative art?
 
 The huge end goal of this project is to provide something like an 'endless generative art collection', which essentially
-is an app, that just produces random artworks based on the initial seed given by the used.
-'Your very own museum of art', if you will
+just produces random artworks based on the initial seed given by the used.
+'Your very own museum of art', if you will.
 
 The project will probably never reach another stage of development as I exhausted all the available Python technologies
 for image processing. I came to the conclusion, that libraries like PIL/Pillow lack support for certain Features I want.
@@ -64,6 +64,20 @@ class DemoArtwork(Artwork):
 ```
 
 You can also iterate over the pixel array, manipulating each pixel by itself. See the artwork `XorCoords` for examples.
+
+
+## Running from command line
+
+You can generate images from the command line. Refer to the [command line guide](./arguments.md) for more detailed
+information on this.
+
+A general example:
+
+```shell
+python app.py -generate --artwork XorCoords --seed 1234556 --generator XorRandom
+```
+
+Only `--artwork` is required for the `-generate` command.
 
 ## Tips
 
