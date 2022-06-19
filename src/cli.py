@@ -9,19 +9,29 @@ class CommandlineRunner(object):
 
     def __init__(self, *args):
         parser = argparse.ArgumentParser()
-        group = parser.add_mutually_exclusive_group(required=True)
-        group.add_argument('-generate', action='store_true')
-        group.add_argument('-gallery', action='store_false')
-        group.add_argument('-test', action='store_false')
-        group.add_argument('-crush', action='store_false')
+        subparsers = parser.add_subparsers()
 
-        generate_group = group.add_argument_group()
-        generate_group.add_argument('--artwork', required=True, action='store')
-        generate_group.add_argument('--seed', action='store')
-        generate_group.add_argument('--generator', action='store')
+        generate_parser = subparsers.add_parser('generate')
+
+        generate_parser.add_argument('--artwork', required=True, action='store')
+        generate_parser.add_argument('--seed', action='store')
+        generate_parser.add_argument('--generator', action='store')
+        generate_parser.add_argument('remainder', nargs=argparse.REMAINDER)
+        generate_parser.set_defaults(generate=self.generate)
+
+        gallery_parser = subparsers.add_parser('gallery')
+        gallery_parser.set_defaults(gallery=self.gallery)
+        test_parser = subparsers.add_parser('test')
+        test_parser.set_defaults(test=self.test)
+        crush_parser = subparsers.add_parser('crush')
+        crush_parser.set_defaults(crush=self.crush)
 
         arguments = parser.parse_args(args)
+
         self.arguments = arguments
+        self.artwork_specific_arguments, self.artwork_specific_keyword_arguments = self.parse_artwork_specific_arguments()
+
+
 
     def run(self):
         if self.arguments.generate:
@@ -34,6 +44,21 @@ class CommandlineRunner(object):
             self.crush()
         else:
             raise NotImplementedError("This method is not supported")
+
+    def parse_artwork_specific_arguments(self):
+        # TODO: Find another/better way for parsing unspecified arguments
+        # TODO: or let the artwork provide those specifications
+        kwargs = dict()
+        args = list()
+        for e in self.arguments.remainder:
+            if '=' in e:
+                key, value = e.split('=')
+                if not key:
+                    raise ValueError('Invalid arguments: {}'.format(e))
+                kwargs[key] = value
+            else:
+                args.append(e)
+        return args, kwargs
 
     @staticmethod
     def find_artwork_class_by_name(searched_artwork):
@@ -56,7 +81,7 @@ class CommandlineRunner(object):
 
         artwork = self.find_artwork_class_by_name(self.arguments.artwork)
         if artwork is not None:
-            img = artwork(rng=random)
+            img = artwork(*self.artwork_specific_arguments, **self.artwork_specific_keyword_arguments, rng=random)
             img.draw()
             img.show()
         else:

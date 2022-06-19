@@ -139,14 +139,14 @@ class PietMondrian(Artwork):
         super().__init__(*args, **kwargs)
 
         # iterations for the splitting loop
-        self.subdivisions = subdivisions
+        self.subdivisions = int(subdivisions)
 
         # minimum size for a single rectangle
         # if this is too small, weird stuff happens
-        self.min_diff = min_diff
+        self.min_diff = int(min_diff)
 
         # spacing between rectangles
-        self.sep = sep
+        self.sep = float(sep)
 
         # Piet Mondrian Color Palette = (38, 71, 124), (240, 217, 92), (162, 45, 40) + (223, 224, 236)
         # Subdivision adjustment
@@ -159,7 +159,7 @@ class PietMondrian(Artwork):
         # splits = [i / 10 for i in range(1, 15, 1)]
 
         # Border thiccness
-        self.edge = edge
+        self.edge = float(edge)
 
         self.random_colors = RandomColors(self.rng)
         self.palette = sns.color_palette(self.random_colors.random_palette(), 16).as_hex()
