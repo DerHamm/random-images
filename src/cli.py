@@ -4,34 +4,73 @@ from src.algos.native_random import NativeRandom
 from src.artworks import art
 
 
+class Arguments(object):
+    def __init__(self):
+        """ Generate an image """
+        self.generate = None
+        """ Generate a gallery of images """
+        self.gallery = None
+        """ Run the BigCrush Test Suite """
+        self.crush = None
+        """ Run the DieHard Test Suite """
+        self.test = None
+        """ Random generator used """
+        self.generator = None
+        """ The random seed """
+        self.seed = None
+        """ Indicates if the generated images should be displayed """
+        self.show = None
+        """ All the artwork classes to be used for the gallery  """
+        self.artworks = None
+
+        # those are lists, but we want to handle those as single values, so properties are created
+        """ The artwork class to be used """
+        self._artwork = None
+        """ Count of artworks to be generated """
+        self._count = None
+
+    @property
+    def count(self):
+        return self._count[0]
+
+    @count.setter
+    def count(self, value):
+        self._count = value
+
+    @property
+    def artwork(self):
+        return self._artwork[0]
+
+    @artwork.setter
+    def artwork(self, value):
+        self._artwork = value
+
+
 class CommandlineRunner(object):
     """ Pass sys.argv into this"""
 
     def __init__(self, *args):
-        parser = argparse.ArgumentParser()
+        parser = argparse.ArgumentParser(description='Random Images CLI')
+
         subparsers = parser.add_subparsers()
 
-        generate_parser = subparsers.add_parser('generate')
-
-        generate_parser.add_argument('--artwork', required=True, action='store')
-        generate_parser.add_argument('--seed', action='store')
-        generate_parser.add_argument('--generator', action='store')
-        generate_parser.add_argument('remainder', nargs=argparse.REMAINDER)
+        generate_parser = Generator.add_arguments(subparsers.add_parser('generate', help='Generate some artwork'))
         generate_parser.set_defaults(generate=self.generate)
 
-        gallery_parser = subparsers.add_parser('gallery')
+        gallery_parser = Gallery.add_arguments(
+            subparsers.add_parser('gallery', help='Generate a whole gallery of artworks'))
         gallery_parser.set_defaults(gallery=self.gallery)
-        test_parser = subparsers.add_parser('test')
+
+        test_parser = subparsers.add_parser('test', help='Run the die hard test suite')
         test_parser.set_defaults(test=self.test)
-        crush_parser = subparsers.add_parser('crush')
+
+        crush_parser = subparsers.add_parser('crush', help='Run the Big Crush test')
         crush_parser.set_defaults(crush=self.crush)
 
-        arguments = parser.parse_args(args)
+        self.arguments = Arguments()
+        parser.parse_args(args, namespace=self.arguments)
 
-        self.arguments = arguments
-        self.artwork_specific_arguments, self.artwork_specific_keyword_arguments = self.parse_artwork_specific_arguments()
-
-
+        self.parser = parser
 
     def run(self):
         if self.arguments.generate:
@@ -43,22 +82,53 @@ class CommandlineRunner(object):
         elif self.arguments.crush:
             self.crush()
         else:
-            raise NotImplementedError("This method is not supported")
+            self.help()
 
-    def parse_artwork_specific_arguments(self):
-        # TODO: Find another/better way for parsing unspecified arguments
-        # TODO: or let the artwork provide those specifications
-        kwargs = dict()
-        args = list()
-        for e in self.arguments.remainder:
-            if '=' in e:
-                key, value = e.split('=')
-                if not key:
-                    raise ValueError('Invalid arguments: {}'.format(e))
-                kwargs[key] = value
-            else:
-                args.append(e)
-        return args, kwargs
+    def generate(self):
+        return Generator(self.arguments).execute()
+
+    def help(self):
+        self.parser.print_help()
+
+    def gallery(self):
+        return Gallery(self.arguments).execute()
+
+    def test(self):
+        raise NotImplementedError('Tests are not implemented yet')
+
+    def crush(self):
+        raise NotImplementedError('Tests are not implemented yet')
+
+
+class Command(object):
+    def __init__(self, arguments: Arguments):
+        self.arguments = arguments
+
+    @staticmethod
+    def add_arguments(parser: argparse.ArgumentParser):
+        raise NotImplementedError
+
+    def execute(self):
+        raise NotImplementedError
+
+
+# Executes the generate command
+class Generator(Command):
+
+    def execute(self):
+        """ Run the generate command to output an image """
+        # TODO: Add argument 'output' and save the image to the path if present
+        random_class = self.find_generator_class_by_name(self.arguments.generator)
+        random = random_class(seed=self.arguments.seed)
+
+        artwork = self.find_artwork_class_by_name(self.arguments.artwork)
+        if artwork is not None:
+            img = artwork(rng=random)
+            img.draw()
+            if self.arguments.show:
+                img.show()
+        else:
+            print('The artwork you search for cannot be found in artworks.py: {}'.format(self.arguments.artwork))
 
     @staticmethod
     def find_artwork_class_by_name(searched_artwork):
@@ -72,26 +142,40 @@ class CommandlineRunner(object):
         default = XorRandom
         return {cls.__name__: cls for cls in classes}.get(searched_generator, default)
 
-    def generate(self):
-        """ Run the generate command to output an image """
-        # TODO: Add argument 'output' and save the image to the path if present
-        # TODO: Add argument 'noshow' (naming?) and don't call show() if present
-        random_class = self.find_generator_class_by_name(self.arguments.generator)
-        random = random_class(seed=self.arguments.seed)
+    @staticmethod
+    def add_arguments(parser):
+        parser.add_argument('artwork', nargs=1, help='(Positional) Name for the artwork')
+        parser.add_argument('--seed', action='store', help='The seed used for the randomness')
+        parser.add_argument('--generator', action='store', help='The random generator to be used')
+        parser.add_argument('--show', action='store_true',
+                            help='Display the image using artworks::IMAGE_VIEW_APPLICATION')
+        return parser
 
-        artwork = self.find_artwork_class_by_name(self.arguments.artwork)
-        if artwork is not None:
-            img = artwork(*self.artwork_specific_arguments, **self.artwork_specific_keyword_arguments, rng=random)
-            img.draw()
-            img.show()
+
+class Gallery(Command):
+    # TODO: Parallel image generation / split of write and generation
+    # TODO: Custom artwork parameters?
+    # TODO: Better seeding?
+    def execute(self):
+        random_class = Generator.find_generator_class_by_name(self.arguments.generator)
+        random = random_class()
+        artworks = [Generator.find_artwork_class_by_name(artwork) for artwork in self.arguments.artworks]
+        if artworks:
+            for _ in range(self.arguments.count):
+                artwork = random.choice(artworks)
+                img = artwork(rng=random)
+                img.draw()
+                if self.arguments.show:
+                    img.show()
+                random.seed(hash(img))
         else:
             print('The artwork you search for cannot be found in artworks.py: {}'.format(self.arguments.artwork))
 
-    def gallery(self):
-        raise NotImplementedError('Gallery is not implemented yet')
-
-    def test(self):
-        raise NotImplementedError('Tests are not implemented yet')
-
-    def crush(self):
-        raise NotImplementedError('Tests are not implemented yet')
+    @staticmethod
+    def add_arguments(parser):
+        parser.add_argument('artworks', nargs='+', help='(Positional) Name for the artwork')
+        parser.add_argument('count', nargs=1, help='Count of artworks to be produced', type=int)
+        parser.add_argument('--generator', action='store', help='The random generator to be used')
+        parser.add_argument('--show', action='store_true',
+                            help='Display the image using artworks::IMAGE_VIEW_APPLICATION')
+        return parser

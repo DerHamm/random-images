@@ -27,7 +27,7 @@ class RandomColors(object):
     ['Pastel1', 'Pastel2', 'Paired', 'Accent','Dark2', 'Set1', 'Set2', 'Set3','tab10', 'tab20', 'tab20b', 'tab20c']),
 
     'Miscellaneous'
-    ['flag', 'prism', 'ocean', 'gist_earth', 'terrain', 'gist_stern','gnuplot', 'gnuplot2', 'CMRmap', 'cubehelix', 'brg','gist_rainbow', 'rainbow', 'jet', 'turbo', 'nipy_spectral','gist_ncar']
+    ['flag', 'prism', 'ocean', 'gist_earth', 'terrain', 'gist_stern','gnuplot', 'gnuplot2', 'CMRmap', 'cubehelix', 'brg','gist_rainbow', 'rainbow', 'turbo', 'nipy_spectral','gist_ncar']
     """
 
     COLOR_PALETTE_NAMES = ['viridis', 'plasma', 'inferno', 'magma', 'cividis'] + \
@@ -41,7 +41,7 @@ class RandomColors(object):
                           ['Pastel1', 'Pastel2', 'Paired', 'Accent', 'Dark2', 'Set1', 'Set2', 'Set3', 'tab10', 'tab20',
                            'tab20b', 'tab20c'] + \
                           ['flag', 'prism', 'ocean', 'gist_earth', 'terrain', 'gist_stern', 'gnuplot', 'gnuplot2', 'CMRmap',
-                           'cubehelix', 'brg', 'gist_rainbow', 'rainbow', 'jet', 'turbo', 'nipy_spectral', 'gist_ncar']
+                           'cubehelix', 'brg', 'gist_rainbow', 'rainbow', 'turbo', 'nipy_spectral', 'gist_ncar']
 
 
     def random_palette(self):

@@ -1,5 +1,4 @@
 from src.algos.hammi_xorshift import XorRandom
-from src.artworks import PietMondrian
 from src.cli import CommandlineRunner
 from sys import argv
 
@@ -19,15 +18,14 @@ from sys import argv
 random = XorRandom()
 random.seed("welchen random seed soll ich nehmen?")
 
-# IMAGE_SIZE = (1920, 1280)
-
 """
 Test the generation of an image
 """
 
 
 def main():
-    command_line_arguments = argv[1::]
+    #command_line_arguments = argv[1::]
+    command_line_arguments = ['gallery', 'PietMondrian', 'XorCoords', '10']
     cli = CommandlineRunner(*command_line_arguments)
     cli.run()
 

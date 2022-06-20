@@ -8,6 +8,9 @@ class XorRandom(Random):
 
     @staticmethod
     def _handle_seed(seed):
+        if seed is None:
+            seed = 88675123 + int(time())
+
         # make *anything* to md5 seed and then convert that seed to int
         def md5_to_int(h):
             return abs(int.from_bytes(h.digest(), 'big'))
@@ -40,6 +43,8 @@ class XorRandom(Random):
         self.seed(val)
 
     def seed(self, a, *args, **kwargs):
+
+
         val = (self._handle_seed(a) & XorRandom._max)
 
         self.x = 123456789

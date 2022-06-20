@@ -8,6 +8,7 @@ from os import system, mkdir
 from os.path import isdir
 from threading import Thread
 from itertools import cycle
+from uuid import uuid4
 
 __all__ = ['AddCoords', 'AndCoords', 'Artwork', 'CoordinateMagics', 'ModCoords', 'OrCoords', 'PietMondrian',
            'SubCoordsYFromX', 'XorCoords', 'art', 'RecursiveQuads']
@@ -123,8 +124,7 @@ class Artwork(object):
         return self.canvas.save(path, 'PNG')
 
     def show(self):
-        # TODO: Replace this path?
-        path = Path('img\\tmp.png').absolute()
+        path = Path('img/{}.png'.format(str(uuid4()))).absolute()
         self.canvas.save(path)
         Thread(target=lambda: system('{app} {path}'.format(app=IMAGE_VIEW_APPLICATION, path=path)), daemon=True).start()
 
