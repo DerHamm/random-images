@@ -1,6 +1,6 @@
-from src.algos.hammi_xorshift import XorRandom
 from src.cli import CommandlineRunner
-from sys import argv
+from os import mkdir
+from os.path import isdir
 
 # TODO: Try and see if you can run this project with PyScript
 # TODO: Implement a PCG instead of XorShift for further experimentation
@@ -15,8 +15,16 @@ from sys import argv
 - Generate Test Data (length, algo_used) (This is probably obsolete because the test frameworks accept streams)
 """
 
-random = XorRandom()
-random.seed("welchen random seed soll ich nehmen?")
+
+def setup():
+    if not isdir('img'):
+        try:
+            mkdir('img')
+        except Exception as e:
+            print(e)
+            return False
+    return True
+
 
 """
 Test the generation of an image
@@ -24,8 +32,11 @@ Test the generation of an image
 
 
 def main():
-    #command_line_arguments = argv[1::]
-    command_line_arguments = ['gallery', 'PietMondrian', 'XorCoords', '10']
+    if not setup():
+        quit(2)
+
+    # command_line_arguments = argv[1::]
+    command_line_arguments = ['gallery', 'PietMondrian', 'XorCoords', '3', '--show', '--seed', '123456']
     cli = CommandlineRunner(*command_line_arguments)
     cli.run()
 

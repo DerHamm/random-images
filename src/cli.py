@@ -158,7 +158,7 @@ class Gallery(Command):
     # TODO: Better seeding?
     def execute(self):
         random_class = Generator.find_generator_class_by_name(self.arguments.generator)
-        random = random_class()
+        random = random_class(seed=self.arguments.seed)
         artworks = [Generator.find_artwork_class_by_name(artwork) for artwork in self.arguments.artworks]
         if artworks:
             for _ in range(self.arguments.count):
@@ -167,7 +167,9 @@ class Gallery(Command):
                 img.draw()
                 if self.arguments.show:
                     img.show()
-                random.seed(hash(img))
+                else:
+                    img.save()
+                random.seed(img.hash)
         else:
             print('The artwork you search for cannot be found in artworks.py: {}'.format(self.arguments.artwork))
 
@@ -178,4 +180,6 @@ class Gallery(Command):
         parser.add_argument('--generator', action='store', help='The random generator to be used')
         parser.add_argument('--show', action='store_true',
                             help='Display the image using artworks::IMAGE_VIEW_APPLICATION')
+        parser.add_argument('--seed', action='store',
+                            help='Seed to be used')
         return parser

@@ -26,19 +26,6 @@ def rect_size(point1, point2, point3, point4):
     return width * length
 
 
-def setup():
-    if not isdir('img'):
-        try:
-            mkdir('img')
-        except Exception as e:
-            print(e)
-            return False
-    return True
-
-
-if not setup():
-    quit(2)
-
 
 class Canvas(object):
     """ Canvas needs to implement some image """
@@ -84,7 +71,7 @@ class PillowCanvas(Canvas):
     def rotate(self, *args, **kwargs):
         self.image.rotate(*args, **kwargs)
 
-
+from hashlib import md5
 class Artwork(object):
     _canvas: Image
     _pixels: PyAccess
@@ -99,6 +86,7 @@ class Artwork(object):
         self._pixels = None
         self._default_color = default_color
         self.rng = rng
+        self.hash = abs(int.from_bytes(md5(str(self.rng.random()).encode()).digest(), 'big'))
 
     @property
     def default_color(self):
@@ -120,7 +108,9 @@ class Artwork(object):
             self._pixels = self.canvas.load()
         return self._pixels
 
-    def save(self, path):
+    def save(self, path=None):
+        if not path:
+            path = Path('img/{}.png'.format(str(uuid4()))).absolute()
         return self.canvas.save(path, 'PNG')
 
     def show(self):
