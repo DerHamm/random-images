@@ -15,7 +15,6 @@ the image seed, which will be the Images 'theme'.
 """
 
 
-# TODO: Implement Patterns and Pixel as Iterables
 class RandomImage(object):
     SIZE = 16
 

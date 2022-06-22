@@ -1,11 +1,11 @@
 from src.cli import CommandlineRunner
 from os import mkdir
 from os.path import isdir
+from pathlib import Path
 
 # TODO: Try and see if you can run this project with PyScript
 # TODO: Implement a PCG instead of XorShift for further experimentation
 # TODO: Create a UnitTest-Suite based around the RandomProvider class and find a way to test all algos with that class
-# TODO: Accept command line args here and start doing stuff
 # Options to consider:
 """
 - Run Big Crush / Small Crush / Diehard / Whatever Tests
@@ -25,6 +25,11 @@ def setup():
             return False
     return True
 
+def cleanup():
+    files = list(Path('img').iterdir())
+    if len(files) > 10:
+        for path in files:
+            path.unlink()
 
 """
 Test the generation of an image
@@ -34,10 +39,12 @@ Test the generation of an image
 def main():
     if not setup():
         quit(2)
+    cleanup()
 
     # command_line_arguments = argv[1::]
-    command_line_arguments = ['gallery', 'PietMondrian', 'XorCoords', '3', '--show', '--seed', '123456']
-    cli = CommandlineRunner(*command_line_arguments)
+    gallery_command_line_arguments = ['gallery', 'PietMondrian', 'XorCoords', '3', '--show', '--seed', '123456']
+    generate_command_line_arguments = ['generate', 'PietMondrian', '--show', '--seed', '123456']
+    cli = CommandlineRunner(*gallery_command_line_arguments)
     cli.run()
 
 

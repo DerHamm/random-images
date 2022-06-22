@@ -22,6 +22,8 @@ class Arguments(object):
         self.show = None
         """ All the artwork classes to be used for the gallery  """
         self.artworks = None
+        """ Path for the image to be stored at """
+        self.output = None
 
         # those are lists, but we want to handle those as single values, so properties are created
         """ The artwork class to be used """
@@ -117,7 +119,6 @@ class Generator(Command):
 
     def execute(self):
         """ Run the generate command to output an image """
-        # TODO: Add argument 'output' and save the image to the path if present
         random_class = self.find_generator_class_by_name(self.arguments.generator)
         random = random_class(seed=self.arguments.seed)
 
@@ -127,6 +128,9 @@ class Generator(Command):
             img.draw()
             if self.arguments.show:
                 img.show()
+
+            if self.arguments.output is not None:
+                img.save(path=self.arguments.output)
         else:
             print('The artwork you search for cannot be found in artworks.py: {}'.format(self.arguments.artwork))
 
@@ -149,13 +153,14 @@ class Generator(Command):
         parser.add_argument('--generator', action='store', help='The random generator to be used')
         parser.add_argument('--show', action='store_true',
                             help='Display the image using artworks::IMAGE_VIEW_APPLICATION')
+        parser.add_argument('--output', action='store',
+                            help='Store the image to this path')
         return parser
 
 
 class Gallery(Command):
     # TODO: Parallel image generation / split of write and generation
-    # TODO: Custom artwork parameters?
-    # TODO: Better seeding?
+    # TODO: Custom artwork parameters? -> Randomize all parameters
     def execute(self):
         random_class = Generator.find_generator_class_by_name(self.arguments.generator)
         random = random_class(seed=self.arguments.seed)

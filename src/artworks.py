@@ -4,11 +4,11 @@ from PIL import Image, PyAccess, ImageDraw
 from src.random_colors import RandomColors
 import seaborn as sns
 from pathlib import Path
-from os import system, mkdir
-from os.path import isdir
+from os import system
 from threading import Thread
 from itertools import cycle
 from uuid import uuid4
+from hashlib import md5
 
 __all__ = ['AddCoords', 'AndCoords', 'Artwork', 'CoordinateMagics', 'ModCoords', 'OrCoords', 'PietMondrian',
            'SubCoordsYFromX', 'XorCoords', 'art', 'RecursiveQuads']
@@ -24,7 +24,6 @@ def rect_size(point1, point2, point3, point4):
     width = math.sqrt(math.pow((point2[0] - point1[0]), 2) + math.pow((point2[1] - point1[1]), 2))
     length = math.sqrt(math.pow((point4[0] - point3[0]), 2) + math.pow((point4[1] - point3[1]), 2))
     return width * length
-
 
 
 class Canvas(object):
@@ -71,7 +70,7 @@ class PillowCanvas(Canvas):
     def rotate(self, *args, **kwargs):
         self.image.rotate(*args, **kwargs)
 
-from hashlib import md5
+
 class Artwork(object):
     _canvas: Image
     _pixels: PyAccess
@@ -109,12 +108,13 @@ class Artwork(object):
         return self._pixels
 
     def save(self, path=None):
-        if not path:
+        if path is None:
             path = Path('img/{}.png'.format(str(uuid4()))).absolute()
         return self.canvas.save(path, 'PNG')
 
-    def show(self):
-        path = Path('img/{}.png'.format(str(uuid4()))).absolute()
+    def show(self, path=None):
+        if path is None:
+            path = Path('img/{}.png'.format(str(uuid4()))).absolute()
         self.canvas.save(path)
         Thread(target=lambda: system('{app} {path}'.format(app=IMAGE_VIEW_APPLICATION, path=path)), daemon=True).start()
 
