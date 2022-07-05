@@ -1,8 +1,20 @@
 import argparse
+import collections.abc
+import time
+import uuid
+
+import src.random_provider
 from src.algos.hammi_xorshift import XorRandom
 from src.algos.native_random import NativeRandom
 from src.algos.collatz_conjecture import CollatzConjectureRandom
 from src.artworks import art, DummyPlot
+from pathlib import Path
+from src.logger import get_logger
+from src.argument_randomizer import create_random_argument_map
+from typing import Union, Optional
+
+
+LOGGER = get_logger(__name__)
 
 
 class Arguments(object):
@@ -33,19 +45,19 @@ class Arguments(object):
         self._count = None
 
     @property
-    def count(self):
+    def count(self) -> int:
         return self._count[0]
 
     @count.setter
-    def count(self, value):
+    def count(self, value: int):
         self._count = value
 
     @property
-    def artwork(self):
+    def artwork(self) -> str:
         return self._artwork[0]
 
     @artwork.setter
-    def artwork(self, value):
+    def artwork(self, value: str):
         self._artwork = value
 
 
@@ -54,7 +66,6 @@ class CommandlineRunner(object):
 
     def __init__(self, *args):
         parser = argparse.ArgumentParser(description='Random Images CLI', exit_on_error=False)
-
 
         subparsers = parser.add_subparsers()
 
@@ -109,45 +120,23 @@ class Command(object):
         self.arguments = arguments
 
     @staticmethod
-    def add_arguments(parser: argparse.ArgumentParser):
+    def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         raise NotImplementedError
 
     def execute(self):
         raise NotImplementedError
 
-from src.argument_randomizer import create_random_argument_map
+
 # Executes the generate command
 class Generator(Command):
 
     def execute(self):
         """ Run the generate command to output an image """
-        random_class = self.find_generator_class_by_name(self.arguments.generator)
-        random = random_class(seed=self.arguments.seed)
-        artwork = self.find_artwork_class_by_name(self.arguments.artwork)
-        random_kwargs_generator = create_random_argument_map(artwork, random)
-        if artwork is not None:
-            random_kwargs = {key: get() for key, get in random_kwargs_generator.items()}
-            img = artwork(rng=random, **random_kwargs)
-            img.draw()
-            if self.arguments.show:
-                img.show()
-
-            if self.arguments.output is not None:
-                img.save(path=self.arguments.output)
-        else:
-            print('The artwork you search for cannot be found in artworks.py: {}'.format(self.arguments.artwork))
-
-    @staticmethod
-    def find_artwork_class_by_name(searched_artwork):
-        for artwork in art + [DummyPlot]:
-            if artwork.__name__ == searched_artwork:
-                return artwork
-
-    @staticmethod
-    def find_generator_class_by_name(searched_generator):
-        classes = [NativeRandom, XorRandom, CollatzConjectureRandom]
-        default = XorRandom
-        return {cls.__name__: cls for cls in classes}.get(searched_generator, default)
+        random = GeneratorUtils.get_random_number_generator(self)
+        save_path = GeneratorUtils.get_save_path(self) / (str(uuid.uuid4()) + ".png")
+        self.arguments.count = [1]
+        artworks = GeneratorUtils.create_argument_function_mapping(self, random)
+        GeneratorUtils.draw_artworks(artworks, self, random, save_path)
 
     @staticmethod
     def add_arguments(parser):
@@ -163,34 +152,10 @@ class Generator(Command):
 
 class Gallery(Command):
     def execute(self):
-        random_class = Generator.find_generator_class_by_name(self.arguments.generator)
-        random = random_class()
-        random.seed(self.arguments.seed)
-
-        # produce a map of artworks, that holds another map with the keyword argument random functions
-        # e.g.:
-        # {Artwork: {param1: param1_getter}}
-        # where artwork is an Artwork class, param1 is the key string for the parameter and param1_getter is a lambda
-        artworks = dict()
-        for artwork in self.arguments.artworks:
-            value = Generator.find_artwork_class_by_name(artwork)
-            if value is not None:
-                artworks[value] = create_random_argument_map(artwork, random)
-
-        if len(artworks) > 0:
-            for _ in range(self.arguments.count):
-                artwork, random_kwargs_generator = random.choice(list(artworks.items()))
-                random_kwargs = {key: get() for key, get in random_kwargs_generator.items()}
-
-                img = artwork(rng=random, **random_kwargs)
-                img.draw()
-                if self.arguments.show:
-                    img.show()
-                else:
-                    img.save()
-                random.seed(img.hash)
-        else:
-            print('The artwork you search for cannot be found in artworks.py: {}'.format(self.arguments.artwork))
+        random = GeneratorUtils.get_random_number_generator(self)
+        artworks = GeneratorUtils.create_argument_function_mapping(self, random)
+        save_path = GeneratorUtils.get_save_path(self)
+        GeneratorUtils.draw_artworks(artworks, self, random, save_path)
 
     @staticmethod
     def add_arguments(parser):
@@ -201,4 +166,74 @@ class Gallery(Command):
                             help='Display the image using artworks::IMAGE_VIEW_APPLICATION')
         parser.add_argument('--seed', action='store',
                             help='Seed to be used')
+        parser.add_argument('--output', action='store',
+                            help='Store all images to this directory')
         return parser
+
+
+class GeneratorUtils(object):
+    @staticmethod
+    def get_random_number_generator(command: Union[Gallery, Generator]) -> src.random_provider.Random:
+        random_class = GeneratorUtils.find_generator_class_by_name(command.arguments.generator)
+        random = random_class()
+        random.seed(command.arguments.seed)
+        return random
+
+    @staticmethod
+    def find_artwork_class_by_name(searched_artwork: str) -> Optional[str]:
+        for artwork in art + [DummyPlot]:
+            if artwork.__name__ == searched_artwork:
+                return artwork
+
+    @staticmethod
+    def find_generator_class_by_name(searched_generator: str) -> type:
+        classes = [NativeRandom, XorRandom, CollatzConjectureRandom]
+        default = XorRandom
+        return {cls.__name__: cls for cls in classes}.get(searched_generator, default)
+
+    @staticmethod
+    def get_save_path(command: Union[Gallery, Generator]) -> Union[str, Path]:
+        if command.arguments.output is not None:
+            return Path(command.arguments.output)
+        return Path(__file__).parent.parent / Path('img/')
+
+    @staticmethod
+    def draw_artworks(artworks: collections.abc.Collection, command: Union[Gallery, Generator], random: src.random_provider.Random, save_path: str):
+        if len(artworks) > 0:
+            LOGGER.info('Starting to draw images')
+            now = time.time()
+            for _ in range(command.arguments.count):
+                artwork, random_kwargs_generator = random.choice(list(artworks.items()))
+                random_kwargs = {key: get() for key, get in random_kwargs_generator.items()}
+
+                LOGGER.info('Drawing artwork ({}/{}): {}'.format(_, command.arguments.count, artwork))
+                img = artwork(rng=random, **random_kwargs)
+                img.draw()
+                if command.arguments.show:
+                    img.show(path=save_path)
+                else:
+                    img.save(save_path)
+
+                random.seed(img.hash)
+            LOGGER.info('Drawing done. Took {}'.format(time.time() - now))
+        else:
+            LOGGER.error(
+                'The artwork(s) you search for cannot be found in artworks.py: {}'.format(command.arguments.artwork)
+            )
+
+    @staticmethod
+    def create_argument_function_mapping(command: Union[Gallery, Generator],
+                                         random: src.random_provider.Random) -> dict:
+        # produce a map of artworks, that holds another map with the keyword argument random functions
+        # e.g.:
+        # {Artwork: {param1: param1_getter}}
+        # where artwork is an Artwork class, param1 is the key string for the parameter and param1_getter is a lambda
+        artworks = dict()
+        artwork_arguments = command.arguments.artworks if command.arguments.artworks is not None else [
+            command.arguments.artwork]
+
+        for artwork in artwork_arguments:
+            value = GeneratorUtils.find_artwork_class_by_name(artwork)
+            if value is not None:
+                artworks[value] = create_random_argument_map(artwork, random)
+        return artworks

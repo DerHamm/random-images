@@ -1,6 +1,7 @@
 import math
-import typing
+import time
 from PIL import Image, PyAccess, ImageDraw
+import src.random_provider
 from src.random_colors import RandomColors
 import seaborn as sns
 from pathlib import Path
@@ -10,19 +11,60 @@ from itertools import cycle
 from uuid import uuid4
 from hashlib import md5
 from math import sqrt
+from src.logger import get_logger
+from typing import Union
 
 __all__ = ['AddCoords', 'AndCoords', 'Artwork', 'CoordinateMagics', 'ModCoords', 'OrCoords', 'PietMondrian',
-           'SubCoordsYFromX', 'XorCoords', 'art', 'RecursiveQuads', 'DummyPlot', 'CirclePacking']
+           'SubCoordsYFromX', 'XorCoords', 'art', 'RecursiveQuads', 'DummyPlot', 'CirclePacking', 'ImageMerge']
+
+LOGGER = get_logger(__name__)
 
 IMAGE_VIEW_APPLICATION = 'paintdotnet'
 
 
-def hex_to_rgb(h):
+class ImageMerge(object):
+    def __init__(self, directory: Union[str, Path]):
+        self.directory = Path(directory)
+
+    def merge(self):
+        LOGGER.info('Merging image')
+        now = time.time()
+
+        images = list()
+        for p in self.directory.iterdir():
+            image = Image.open(str(p))
+            images.append(image)
+
+        images_per_row = round(math.sqrt(len(images)))
+
+        first_image = images[0]
+        width = first_image.size[0]
+        height = first_image.size[1]
+
+        row_width = images_per_row * width
+        row_height = images_per_row * height
+
+        new_image = Image.new('RGBA', (row_width, row_height), (255, 255, 255))
+
+        x = 0
+        y = 0
+        for image in images:
+            new_image.paste(image, (x, y))
+            x += width
+            if x >= row_width:
+                x = 0
+                y += height
+
+        LOGGER.info('Image merged. Took {}'.format(time.time() - now))
+        new_image.save('img/test.png')
+
+
+def hex_to_rgb(h: str) -> tuple:
     """ It looks cursed, but it just casts the hex numbers to decimals and wraps them in a tuple """
-    return tuple(int(h[1:][i:i + 2], 16) for i in (0, 2, 4))
+    return tuple(int(h[1:][num:num + 2], 16) for num in (0, 2, 4))
 
 
-def rect_size(point1, point2, point3, point4):
+def rect_size(point1: list, point2: list, point3: list, point4: list) -> float:
     width = math.sqrt(math.pow((point2[0] - point1[0]), 2) + math.pow((point2[1] - point1[1]), 2))
     length = math.sqrt(math.pow((point4[0] - point3[0]), 2) + math.pow((point4[1] - point3[1]), 2))
     return width * length
@@ -51,22 +93,22 @@ class Canvas(object):
 
 class PillowCanvas(Canvas):
 
-    def __init__(self, mode, size, color=0):
+    def __init__(self, mode: str, size: tuple, color: Union[float, str, tuple] = 0):
         self.image = PillowCanvas.new(mode, size, color=color)
         self._size = size
 
     @staticmethod
-    def new(mode, size, color: typing.Any = 0):
+    def new(mode, size, color: Union[float, str, tuple] = 0) -> Image:
         return Image.new(mode, size, color=color)
 
-    def load(self):
+    def load(self) -> PyAccess:
         return self.image.load()
 
-    def save(self, fp, _format=None, **kwargs):
+    def save(self, fp: str, _format: str = None, **kwargs):
         self.image.save(fp, format=_format, **kwargs)
 
     @property
-    def size(self):
+    def size(self) -> tuple:
         return self._size
 
     def rotate(self, *args, **kwargs):
@@ -76,6 +118,7 @@ class PillowCanvas(Canvas):
 class Artwork(object):
     _canvas: Image
     _pixels: PyAccess
+    rng: src.random_provider.Random
 
     CANVAS_CLASS = PillowCanvas
     DEFAULT_MODE = 'RGBA'
@@ -98,34 +141,43 @@ class Artwork(object):
         self._default_color = value
 
     @property
-    def canvas(self):
+    def canvas(self) -> Image:
         if self._canvas is None:
             self._canvas = Artwork.CANVAS_CLASS(Artwork.DEFAULT_MODE, Artwork.DEFAULT_SIZE, self.default_color)
         return self._canvas
 
     @property
-    def pixels(self):
+    def pixels(self) -> PyAccess:
         if self._pixels is None:
             self._pixels = self.canvas.load()
         return self._pixels
 
-    def save(self, path=None):
+    def save(self, path: str = None):
         if path is None:
             path = Path('img/{}.png'.format(str(uuid4()))).absolute()
+        if Path(path).is_dir():
+            path = Path(path) / (str(uuid4()) + '.png')
         return self.canvas.save(path, 'PNG')
 
-    def show(self, path=None):
+    def show(self, path: str = None):
         if path is None:
             path = Path('img/{}.png'.format(str(uuid4()))).absolute()
+        if Path(path).is_dir():
+            path = Path(path) / (str(uuid4()) + '.png')
         self.canvas.save(path)
-        Thread(target=lambda: system('{app} {path}'.format(app=IMAGE_VIEW_APPLICATION, path=path)), daemon=True).start()
+        Thread(target=lambda: system('start {app} "{path}"'.format(app=IMAGE_VIEW_APPLICATION, path=path)),
+               daemon=True).start()
 
     def draw(self):
         raise NotImplementedError('Each pattern has to implement it\'s own unique image')
 
 
 class PietMondrian(Artwork):
-    def __init__(self, chance_for_background_color=5 / 8, subdivisions=40000, min_diff=16, sep=1, splits=None, edge=10,
+    def __init__(self,
+                 chance_for_background_color: float = 5 / 8,
+                 subdivisions: int = 40000,
+                 min_diff: float = 16, sep: float = 1,
+                 splits: list[float] = None, edge: float = 10,
                  *args, **kwargs):
 
         super().__init__(*args, **kwargs)
@@ -211,7 +263,7 @@ class PietMondrian(Artwork):
 
 
 class CoordinateMagics(Artwork):
-    def __init__(self, chance=0.5, *args, **kwargs):
+    def __init__(self, chance: float = 0.5, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.random_colors = RandomColors(self.rng)
         self.chance = chance
@@ -219,7 +271,7 @@ class CoordinateMagics(Artwork):
         self.random_color = lambda: hex_to_rgb(self.random_colors.random_color_from_palette(self.palette))
         self.theme = self.random_color()
 
-    def operation(self, x, y):
+    def operation(self, x: int, y: int):
         raise NotImplementedError()
 
     def draw(self):
@@ -341,6 +393,7 @@ class RecursiveQuads(Artwork):
 class DummyPlot(Artwork):
     """ The dummy plot that one generates when testing out
         how 'random' a PRNG is """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -451,12 +504,7 @@ class CirclePacking(Artwork):
                 (point[0] + radius, point[1] + radius)]
 
 
-art = classes = [AddCoords,
-                 AndCoords,
-                 ModCoords,
-                 OrCoords,
-                 PietMondrian,
-                 SubCoordsYFromX,
-                 XorCoords,
-                 RecursiveQuads,
-                 CirclePacking]
+art = [PietMondrian,
+       XorCoords,
+       RecursiveQuads,
+       CirclePacking]

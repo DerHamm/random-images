@@ -1,6 +1,9 @@
+import src.random_provider
+
+
 class RandomColors(object):
 
-    def __init__(self, rng):
+    def __init__(self, rng: src.random_provider.Random):
         self.rng = rng
 
     """
@@ -45,14 +48,14 @@ class RandomColors(object):
                            'Greens', 'gnuplot2', 'pink',
                            'cividis', 'YlGn', 'binary']
 
-    def random_palette(self):
+    def random_palette(self) -> str:
         return self.rng.choice(RandomColors.COLOR_PALETTE_NAMES)
 
-    def random_color(self):
+    def random_color(self) -> tuple[int, int, int]:
         return self.rng.randint(0, 255), self.rng.randint(0, 255), self.rng.randint(0, 255)
 
-    def random_color_from_palette(self, palette):
+    def random_color_from_palette(self, palette) -> str:
         return palette[self.rng.randint(0, len(palette) - 1)]
 
-    def pop_random_color_from_palette(self, palette):
+    def pop_random_color_from_palette(self, palette) -> str:
         return palette.pop(self.rng.randint(0, len(palette) - 1))

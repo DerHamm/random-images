@@ -4,7 +4,7 @@ from hashlib import md5
 __all__ = ['handle_seed', 'SeedException']
 
 
-def handle_seed(seed):
+def handle_seed(seed) -> int:
     """
     Get a md5 hash of seed values of common simple data types.
     Uses Big endian to convert md5 hashes to integer values afterwards
@@ -22,7 +22,7 @@ def handle_seed(seed):
         raise SeedException("Invalid seed {}".format(seed))
 
 
-def md5_to_int(h):
+def md5_to_int(h) -> int:
     """
     Return the big endian integer version of some md5 hash
     """

@@ -16,7 +16,7 @@ class NativeRandom(Random):
         self._seed = random.seed
         self._random = random.random
 
-    def random(self):
+    def random(self) -> float:
         return self._random()
 
     def seed(self, *args, **kwargs):

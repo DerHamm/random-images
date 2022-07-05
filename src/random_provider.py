@@ -1,4 +1,5 @@
 import collections.abc
+import typing
 from random import shuffle
 from itertools import accumulate
 from bisect import bisect
@@ -22,7 +23,6 @@ As seed()-functions sometimes take more than one argument, the seed function is 
 """
 
 
-
 class Random(object):
 
     """
@@ -36,7 +36,7 @@ class Random(object):
     Returns a number in the interval [0..1]
     """
 
-    def random(self, *args, **kwargs):
+    def random(self, *args, **kwargs) -> float:
         raise NotImplementedError()
 
     """
@@ -50,7 +50,7 @@ class Random(object):
     Get a random integer in a range between (min, max)
     """
 
-    def randint(self, low, high):
+    def randint(self, low, high) -> int:
         return low + int(self.random() * (high - low))
 
     """
@@ -64,7 +64,7 @@ class Random(object):
     Taken from native implementation
     """
 
-    def sample(self, population, k, *, counts=None):
+    def sample(self, population: collections.abc.Sequence, k: int, *, counts: list[int] = None) -> collections.abc.Sequence[typing.Any]:
         """Chooses k unique random elements from a population sequence or set.
 
         Returns a new list containing elements from the population while
@@ -166,7 +166,7 @@ class Random(object):
     Taken from native implementation
     """
 
-    def choices(self, population, weights=None, *, cum_weights=None, k=1):
+    def choices(self, population: collections.abc.Sequence, weights=None, *, cum_weights=None, k=1) -> list[typing.Any]:
 
         """Return a k sized list of population elements chosen with replacement.
 
@@ -195,7 +195,7 @@ class Random(object):
     """
     Taken from native implementation
     """
-    def choice(self, seq):
+    def choice(self, seq: collections.abc.Sequence) -> typing.Any:
         """Choose a random element from a non-empty sequence."""
         # raises IndexError if seq is empty
         return seq[self._randbelow(len(seq))]

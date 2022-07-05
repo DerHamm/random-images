@@ -4,41 +4,6 @@ from src.random_provider import Random
 from string import printable, ascii_lowercase, ascii_uppercase, digits, punctuation
 from inspect import signature
 
-
-class RandomArguments(object):
-    """ Pass the application random source into this """
-
-    def __init__(self, random: Random):
-        self.random = random
-
-    def int(self):
-        return IntArgument(self.random)
-
-    def str(self):
-        return StringArgument(self.random)
-
-    def bool(self):
-        return BoolArgument(self.random)
-
-    def float(self):
-        return FloatArgument(self.random)
-
-    def bytes(self):
-        return BytesArgument(self.random)
-
-    def list(self):
-        return ListArgument(self.random)
-
-    def tuple(self):
-        return TupleArgument(self.random)
-
-    def set(self):
-        return SetArgument(self.random)
-
-    def dict(self):
-        return DictArgument(self.random)
-
-
 class RandomArgument(object):
     """ Pass the application random source into this """
 
@@ -47,6 +12,10 @@ class RandomArgument(object):
 
     def build(self):
         raise NotImplementedError
+
+
+
+
 
 
 class BoolArgument(RandomArgument):
@@ -228,10 +197,13 @@ def find_argument(t):
             int: IntArgument,
             float: FloatArgument,
             bytes: BytesArgument,
-            bool: BoolArgument}.get(t)
+            bool: BoolArgument,
+            list: ListArgument}.get(t)
 
 
 class CollectionArgument(RandomArgument):
+    DEFAULT_TYPE = int
+
     def __init__(self, random: Random, collection_type):
         super().__init__(random)
         self.__collection_type = collection_type
@@ -254,7 +226,7 @@ class CollectionArgument(RandomArgument):
 
     def build(self) -> ():
         if len(self._types) == 0:
-            raise TypeError('No types were given for the generator')
+            self._types[CollectionArgument.DEFAULT_TYPE] = find_argument(CollectionArgument.DEFAULT_TYPE)
 
         def get() -> typing.Any:
             args = {t: function(self.random).build() for t, function in self._types.items()}
@@ -360,7 +332,41 @@ class DictArgument(CollectionArgument):
         return self
 
 
-def create_random_argument_map(class_object, rng):
+class RandomArguments(object):
+    """ Pass the application random source into this """
+
+    def __init__(self, random: Random):
+        self.random = random
+
+    def int(self) -> IntArgument:
+        return IntArgument(self.random)
+
+    def str(self) -> StringArgument:
+        return StringArgument(self.random)
+
+    def bool(self) -> BoolArgument:
+        return BoolArgument(self.random)
+
+    def float(self) -> FloatArgument:
+        return FloatArgument(self.random)
+
+    def bytes(self) -> BytesArgument:
+        return BytesArgument(self.random)
+
+    def list(self) -> ListArgument:
+        return ListArgument(self.random)
+
+    def tuple(self) -> TupleArgument:
+        return TupleArgument(self.random)
+
+    def set(self) -> SetArgument:
+        return SetArgument(self.random)
+
+    def dict(self) -> DictArgument:
+        return DictArgument(self.random)
+
+
+def create_random_argument_map(class_object: type, rng: Random):
     sig = signature(class_object.__init__)
     res = dict()
     random_arguments = RandomArguments(rng)
@@ -385,3 +391,4 @@ def create_random_argument_map(class_object, rng):
         elif param.annotation == dict:
             res[param.name] = random_arguments.dict().len(16).type(str).type(int).type(float).build()
     return res
+

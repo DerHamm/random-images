@@ -29,7 +29,7 @@ class XorRandom(Random):
         self.z = 521288629
         self.w = val
 
-    def random(self, *args, **kwargs):
+    def random(self, *args, **kwargs) -> float:
         t = self.x ^ ((self.x << 11) & 0xFFFFFFFF)  # 32bit
         self.x, self.y, self.z = self.y, self.z, self.w
         self.w = (self.w ^ (self.w >> 19) ^ (t ^ (t >> 8)))

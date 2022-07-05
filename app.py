@@ -2,6 +2,9 @@ from src.cli import CommandlineRunner
 from os import mkdir
 from os.path import isdir
 from pathlib import Path
+from src.logger import get_logger
+
+LOGGER = get_logger(__name__)
 
 
 def setup():
@@ -9,7 +12,7 @@ def setup():
         try:
             mkdir('img')
         except Exception as e:
-            print(e)
+            LOGGER.error(e)
             return False
     return True
 
@@ -31,11 +34,13 @@ def main():
     cleanup()
 
     # command_line_arguments = argv[1::]
-    gallery_command_line_arguments = ['gallery', 'CirclePacking', '1', '--show', '--seed',
-                                      '546l3e63h', '--generator', 'XorRandom']
+    gallery_command_line_arguments = ['gallery', 'PietMondrian', '144', '--seed',
+                                      '6515806815', '--generator', 'XorRandom', '--output', 'D:/develop/random-images/testo/']
     generate_command_line_arguments = ['generate', 'CirclePacking', '--show', '--generator', 'XorRandom', '--seed', '546l3e63h']
+    generate_command_line_arguments2 = ['gallery', 'CirclePacking', '1', '--show', '--generator', 'XorRandom', '--seed', '546l3e63h']
     cli = CommandlineRunner(*generate_command_line_arguments)
     cli.run()
+
 
 
 if __name__ == '__main__':
