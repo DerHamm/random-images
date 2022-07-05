@@ -47,7 +47,7 @@ class Random(object):
         raise NotImplementedError()
 
     """
-    Get a random integer in a range between (max, min)
+    Get a random integer in a range between (min, max)
     """
 
     def randint(self, low, high):

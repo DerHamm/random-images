@@ -1,7 +1,8 @@
 import argparse
 from src.algos.hammi_xorshift import XorRandom
 from src.algos.native_random import NativeRandom
-from src.artworks import art
+from src.algos.collatz_conjecture import CollatzConjectureRandom
+from src.artworks import art, DummyPlot
 
 
 class Arguments(object):
@@ -113,7 +114,7 @@ class Command(object):
     def execute(self):
         raise NotImplementedError
 
-
+from src.argument_randomizer import randomize
 # Executes the generate command
 class Generator(Command):
 
@@ -121,10 +122,10 @@ class Generator(Command):
         """ Run the generate command to output an image """
         random_class = self.find_generator_class_by_name(self.arguments.generator)
         random = random_class(seed=self.arguments.seed)
-
         artwork = self.find_artwork_class_by_name(self.arguments.artwork)
         if artwork is not None:
-            img = artwork(rng=random)
+            random_kwargs = randomize(artwork, random)
+            img = artwork(rng=random, **random_kwargs)
             img.draw()
             if self.arguments.show:
                 img.show()
@@ -136,13 +137,13 @@ class Generator(Command):
 
     @staticmethod
     def find_artwork_class_by_name(searched_artwork):
-        for artwork in art:
+        for artwork in art + [DummyPlot]:
             if artwork.__name__ == searched_artwork:
                 return artwork
 
     @staticmethod
     def find_generator_class_by_name(searched_generator):
-        classes = [NativeRandom, XorRandom]
+        classes = [NativeRandom, XorRandom, CollatzConjectureRandom]
         default = XorRandom
         return {cls.__name__: cls for cls in classes}.get(searched_generator, default)
 
@@ -159,16 +160,16 @@ class Generator(Command):
 
 
 class Gallery(Command):
-    # TODO: Parallel image generation / split of write and generation
-    # TODO: Custom artwork parameters? -> Randomize all parameters
     def execute(self):
         random_class = Generator.find_generator_class_by_name(self.arguments.generator)
-        random = random_class(seed=self.arguments.seed)
+        random = random_class()
+        random.seed(int(self.arguments.seed))
         artworks = [Generator.find_artwork_class_by_name(artwork) for artwork in self.arguments.artworks]
         if artworks:
             for _ in range(self.arguments.count):
                 artwork = random.choice(artworks)
-                img = artwork(rng=random)
+                random_kwargs = randomize(artwork, random)
+                img = artwork(rng=random, **random_kwargs)
                 img.draw()
                 if self.arguments.show:
                     img.show()

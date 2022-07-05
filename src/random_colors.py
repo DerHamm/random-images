@@ -53,4 +53,7 @@ class RandomColors(object):
     def random_color_from_palette(self, palette):
         return palette[self.rng.randint(0, len(palette) - 1)]
 
+    def pop_random_color_from_palette(self, palette):
+        return palette.pop(self.rng.randint(0, len(palette) - 1))
+
 
