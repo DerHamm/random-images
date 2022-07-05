@@ -12,7 +12,7 @@ Generate an image
 
 Example:
 
-`python app.py generate Artwork seed=someSeed`
+`python app.py generate Artwork --seed=someSeed`
 
 ### artwork
 - required
@@ -29,18 +29,79 @@ Example:
 
 Example:
 
-`python app.py generate Artwork generator=NativeRandom`
+`python app.py generate Artwork --generator=NativeRandom`
+
+### show
+- optional
+- Display the image
+
+
+Example:
+
+`python app.py generate Artwork --show`
+
+### output
+- optional
+- Save the image to the given path
+
+
+Example:
+
+`python app.py generate Artwork --outupt /home/img.png`
 
 
 ### *args/**kwargs
-- required/optional
-- All the artwork specific arguments
-- We have to manage order of unnamed and naming of named arguments here
 
-`python app.py generate PietMondrian splits=1,2.5,4 min_diff=4`
+WIP
+
 
 ## Gallery
 Generate a gallery of images
+
+### artwork
+- required
+- Class name of the artworks to be generated
+
+Example:
+
+`python app.py gallery PietMondrian XorCoords 1`
+
+### count
+- required
+- Amount of artworks to be generated
+
+Example:
+
+`python app.py gallery PietMondrian 12`
+
+### seed 
+
+- optional
+- A string for the seed used
+
+Example:
+
+`python app.py gallery Artwork --seed=someSeed 1`
+
+### generator
+- optional
+- Random Number generator to be used
+
+Example:
+
+`python app.py gallery Artwork --generator=NativeRandom 1`
+
+### show
+- optional
+- Display the image
+
+
+Example:
+
+`python app.py gallery Artwork 1 --show`
+
+
+
 
 ## Test
 

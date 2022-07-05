@@ -74,7 +74,7 @@ information on this.
 A general example:
 
 ```shell
-python app.py -generate --artwork XorCoords --seed 1234556 --generator XorRandom
+python app.py generate --artwork PietMondrian --seed 1234556 --generator XorRandom
 ```
 
 Only `--artwork` is required for the `-generate` command.
@@ -94,3 +94,22 @@ whole gallery, if you just provide a .json-file, that maps Artwork-Names with se
   "MyArtwork": ["someOtherSeed"]
 }
 ```
+
+## Generators
+
+The projects also features some experimental random number generators. The newest addition is the `CollatzConjecture`-
+Generator, which is based on the (you name it!) Collatz-Conjecture.
+
+I'm planning on adding a PI-based generator, a prime-number based generator as well as some more serious stuff, like
+the PCG-Generator.
+
+## Random arguments
+
+I spent a lot of time implementing `argument_randomizer` to be able to randomize all the parameters for the different
+artworks.
+
+The function `create_random_argument_map` can be used to get a map of functions corresponding to the parameters of the
+classes `__init__` method.
+
+You need to place proper type hints into your artworks for this to work with the randomizer.
+

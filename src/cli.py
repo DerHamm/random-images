@@ -53,7 +53,8 @@ class CommandlineRunner(object):
     """ Pass sys.argv into this"""
 
     def __init__(self, *args):
-        parser = argparse.ArgumentParser(description='Random Images CLI')
+        parser = argparse.ArgumentParser(description='Random Images CLI', exit_on_error=False)
+
 
         subparsers = parser.add_subparsers()
 
@@ -114,7 +115,7 @@ class Command(object):
     def execute(self):
         raise NotImplementedError
 
-from src.argument_randomizer import randomize
+from src.argument_randomizer import create_random_argument_map
 # Executes the generate command
 class Generator(Command):
 
@@ -123,8 +124,9 @@ class Generator(Command):
         random_class = self.find_generator_class_by_name(self.arguments.generator)
         random = random_class(seed=self.arguments.seed)
         artwork = self.find_artwork_class_by_name(self.arguments.artwork)
+        random_kwargs_generator = create_random_argument_map(artwork, random)
         if artwork is not None:
-            random_kwargs = randomize(artwork, random)
+            random_kwargs = {key: get() for key, get in random_kwargs_generator.items()}
             img = artwork(rng=random, **random_kwargs)
             img.draw()
             if self.arguments.show:
@@ -163,12 +165,23 @@ class Gallery(Command):
     def execute(self):
         random_class = Generator.find_generator_class_by_name(self.arguments.generator)
         random = random_class()
-        random.seed(int(self.arguments.seed))
-        artworks = [Generator.find_artwork_class_by_name(artwork) for artwork in self.arguments.artworks]
-        if artworks:
+        random.seed(self.arguments.seed)
+
+        # produce a map of artworks, that holds another map with the keyword argument random functions
+        # e.g.:
+        # {Artwork: {param1: param1_getter}}
+        # where artwork is an Artwork class, param1 is the key string for the parameter and param1_getter is a lambda
+        artworks = dict()
+        for artwork in self.arguments.artworks:
+            value = Generator.find_artwork_class_by_name(artwork)
+            if value is not None:
+                artworks[value] = create_random_argument_map(artwork, random)
+
+        if len(artworks) > 0:
             for _ in range(self.arguments.count):
-                artwork = random.choice(artworks)
-                random_kwargs = randomize(artwork, random)
+                artwork, random_kwargs_generator = random.choice(list(artworks.items()))
+                random_kwargs = {key: get() for key, get in random_kwargs_generator.items()}
+
                 img = artwork(rng=random, **random_kwargs)
                 img.draw()
                 if self.arguments.show:

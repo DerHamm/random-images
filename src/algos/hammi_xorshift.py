@@ -37,5 +37,4 @@ class XorRandom(Random):
         # xor with the max value and right shift to 2
         # the xor again with y rshifted on the max of (x, z), which then again is lshifted on on the min of (x, z)
         self.w = (self.w ^ 0xFFFFFFFF >> 2) ^ (self.y >> max(self.z, self.x) << min(self.z, self.x))
-
         return self.w / XorRandom._max
