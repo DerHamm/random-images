@@ -1,5 +1,5 @@
-from ..random_provider import Random
 import random
+from ..random_provider import Random
 
 """
 Use the native Python randomness. Note: random.seed has to be called with version=1 to ensure, that

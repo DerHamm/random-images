@@ -1,7 +1,7 @@
 from time import time
 from hashlib import md5
 
-__all__ = ['handle_seed', 'SeedException']
+__all__ = ["handle_seed", "SeedException"]
 
 
 def handle_seed(seed) -> int:
@@ -26,9 +26,10 @@ def md5_to_int(h) -> int:
     """
     Return the big endian integer version of some md5 hash
     """
-    return abs(int.from_bytes(h.digest(), 'big'))
+    return abs(int.from_bytes(h.digest(), "big"))
 
 
 class SeedException(Exception):
-    """ Used for any errors in the seed handling """
+    """Used for any errors in the seed handling"""
+
     pass

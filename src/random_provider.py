@@ -1,5 +1,6 @@
 import collections.abc
 import typing
+
 from random import shuffle
 from itertools import accumulate
 from bisect import bisect
@@ -64,7 +65,9 @@ class Random(object):
     Taken from native implementation
     """
 
-    def sample(self, population: collections.abc.Sequence, k: int, *, counts: list[int] = None) -> collections.abc.Sequence[typing.Any]:
+    def sample(
+        self, population: collections.abc.Sequence, k: int, *, counts: list[int] = None
+    ) -> collections.abc.Sequence[typing.Any]:
         """Chooses k unique random elements from a population sequence or set.
 
         Returns a new list containing elements from the population while
@@ -94,17 +97,19 @@ class Random(object):
 
         """
         if not isinstance(population, collections.abc.Sequence):
-            raise TypeError("Population must be a sequence.  For dicts or sets, use sorted(d).")
+            raise TypeError(
+                "Population must be a sequence.  For dicts or sets, use sorted(d)."
+            )
         n = len(population)
         if counts is not None:
             cum_counts = list(accumulate(counts))
             if len(cum_counts) != n:
-                raise ValueError('The number of counts does not match the population')
+                raise ValueError("The number of counts does not match the population")
             total = cum_counts.pop()
             if not isinstance(total, int):
-                raise TypeError('Counts must be integers')
+                raise TypeError("Counts must be integers")
             if total <= 0:
-                raise ValueError('Total of counts must be greater than zero')
+                raise ValueError("Total of counts must be greater than zero")
             selections = self.sample(range(total), k=k)
 
             return [population[bisect(cum_counts, s)] for s in selections]
@@ -147,9 +152,11 @@ class Random(object):
 
         random = self.random
         if n >= maxsize:
-            warn("Underlying random() generator does not supply \n"
-                 "enough bits to choose from a population range this large.\n"
-                 "To remove the range limitation, add a getrandbits() method.")
+            warn(
+                "Underlying random() generator does not supply \n"
+                "enough bits to choose from a population range this large.\n"
+                "To remove the range limitation, add a getrandbits() method."
+            )
             return floor(random() * n)
         if n == 0:
             return 0
@@ -166,8 +173,14 @@ class Random(object):
     Taken from native implementation
     """
 
-    def choices(self, population: collections.abc.Sequence, weights=None, *, cum_weights=None, k=1) -> list[typing.Any]:
-
+    def choices(
+        self,
+        population: collections.abc.Sequence,
+        weights=None,
+        *,
+        cum_weights=None,
+        k=1
+    ) -> list[typing.Any]:
         """Return a k sized list of population elements chosen with replacement.
 
         If the relative weights or cumulative weights are not specified,
@@ -182,19 +195,22 @@ class Random(object):
                 return [population[floor(random() * n)] for _ in repeat(None, k)]
             cum_weights = list(accumulate(weights))
         elif weights is not None:
-            raise TypeError('Cannot specify both weights and cumulative weights')
+            raise TypeError("Cannot specify both weights and cumulative weights")
         if len(cum_weights) != n:
-            raise ValueError('The number of weights does not match the population')
+            raise ValueError("The number of weights does not match the population")
         total = cum_weights[-1] + 0.0  # convert to float
         if total <= 0.0:
-            raise ValueError('Total of weights must be greater than zero')
+            raise ValueError("Total of weights must be greater than zero")
         hi = n - 1
-        return [population[bisect(cum_weights, random() * total, 0, hi)]
-                for _ in repeat(None, k)]
+        return [
+            population[bisect(cum_weights, random() * total, 0, hi)]
+            for _ in repeat(None, k)
+        ]
 
     """
     Taken from native implementation
     """
+
     def choice(self, seq: collections.abc.Sequence) -> typing.Any:
         """Choose a random element from a non-empty sequence."""
         # raises IndexError if seq is empty

@@ -1,9 +1,8 @@
-import src.random_provider
+from .random_provider import Random
 
 
 class RandomColors(object):
-
-    def __init__(self, rng: src.random_provider.Random):
+    def __init__(self, rng: Random):
         self.rng = rng
 
     """
@@ -32,27 +31,100 @@ class RandomColors(object):
     'gist_rainbow', 'rainbow', 'turbo', 'nipy_spectral','gist_ncar']
     """
 
-    COLOR_PALETTE_NAMES = ['viridis', 'gnuplot', 'coolwarm', 'Accent', 'tab20c', 'ocean', 'BrBG', 'RdBu', 'Set3',
-                           'RdYlGn', 'YlOrRd',
-                           'inferno', 'flag', 'afmhot', 'Set2', 'Pastel2', 'cool', 'gist_yarg', 'BuGn', 'RdPu', 'PuRd',
-                           'Purples', 'terrain',
-                           'YlGnBu', 'brg', 'twilight_shifted', 'PRGn', 'PuBuGn', 'YlOrBr', 'seismic', 'bwr', 'OrRd',
-                           'Spectral', 'PuBu',
-                           'gist_earth', 'Oranges', 'prism', 'gist_ncar', 'nipy_spectral', 'gist_rainbow', 'twilight',
-                           'Pastel1', 'GnBu',
-                           'gist_heat', 'Reds', 'hot', 'Paired', 'PuOr', 'cubehelix', 'spring', 'Wistia', 'Greys',
-                           'Dark2', 'tab20', 'autumn',
-                           'tab10', 'gist_gray', 'bone', 'Set1', 'gray', 'RdYlBu', 'RdGy', 'magma', 'gist_stern',
-                           'tab20b', 'Blues', 'hsv',
-                           'plasma', 'PiYG', 'copper', 'turbo', 'summer', 'BuPu', 'rainbow', 'CMRmap', 'winter',
-                           'Greens', 'gnuplot2', 'pink',
-                           'cividis', 'YlGn', 'binary']
+    COLOR_PALETTE_NAMES = [
+        "viridis",
+        "gnuplot",
+        "coolwarm",
+        "Accent",
+        "tab20c",
+        "ocean",
+        "BrBG",
+        "RdBu",
+        "Set3",
+        "RdYlGn",
+        "YlOrRd",
+        "inferno",
+        "flag",
+        "afmhot",
+        "Set2",
+        "Pastel2",
+        "cool",
+        "gist_yarg",
+        "BuGn",
+        "RdPu",
+        "PuRd",
+        "Purples",
+        "terrain",
+        "YlGnBu",
+        "brg",
+        "twilight_shifted",
+        "PRGn",
+        "PuBuGn",
+        "YlOrBr",
+        "seismic",
+        "bwr",
+        "OrRd",
+        "Spectral",
+        "PuBu",
+        "gist_earth",
+        "Oranges",
+        "prism",
+        "gist_ncar",
+        "nipy_spectral",
+        "gist_rainbow",
+        "twilight",
+        "Pastel1",
+        "GnBu",
+        "gist_heat",
+        "Reds",
+        "hot",
+        "Paired",
+        "PuOr",
+        "cubehelix",
+        "spring",
+        "Wistia",
+        "Greys",
+        "Dark2",
+        "tab20",
+        "autumn",
+        "tab10",
+        "gist_gray",
+        "bone",
+        "Set1",
+        "gray",
+        "RdYlBu",
+        "RdGy",
+        "magma",
+        "gist_stern",
+        "tab20b",
+        "Blues",
+        "hsv",
+        "plasma",
+        "PiYG",
+        "copper",
+        "turbo",
+        "summer",
+        "BuPu",
+        "rainbow",
+        "CMRmap",
+        "winter",
+        "Greens",
+        "gnuplot2",
+        "pink",
+        "cividis",
+        "YlGn",
+        "binary",
+    ]
 
     def random_palette(self) -> str:
         return self.rng.choice(RandomColors.COLOR_PALETTE_NAMES)
 
     def random_color(self) -> tuple[int, int, int]:
-        return self.rng.randint(0, 255), self.rng.randint(0, 255), self.rng.randint(0, 255)
+        return (
+            self.rng.randint(0, 255),
+            self.rng.randint(0, 255),
+            self.rng.randint(0, 255),
+        )
 
     def random_color_from_palette(self, palette) -> str:
         return palette[self.rng.randint(0, len(palette) - 1)]

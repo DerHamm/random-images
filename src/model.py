@@ -1,5 +1,6 @@
-from src.algos.hammi_xorshift import XorRandom as Random
 from hashlib import md5
+
+from .algos.hammi_xorshift import XorRandom as Random
 
 random = Random()
 
@@ -21,8 +22,14 @@ class RandomImage(object):
     def __init__(self, seed):
         self.seed = md5(seed.encode()).digest()
         random.seed(self.seed, version=1)
-        self.theme = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        self.patterns = [RandomImage.Pattern(self.seed) for _ in range(RandomImage.SIZE)]
+        self.theme = (
+            random.randint(0, 255),
+            random.randint(0, 255),
+            random.randint(0, 255),
+        )
+        self.patterns = [
+            RandomImage.Pattern(self.seed) for _ in range(RandomImage.SIZE)
+        ]
 
     class Pattern(object):
         def __init__(self, parent_seed):
@@ -32,7 +39,9 @@ class RandomImage(object):
             self.seed = md5(str(r).encode()).digest()
 
             random.seed(self.seed, version=1)
-            self.pixels = [RandomImage.Pixel(self.seed) for _ in range(RandomImage.SIZE)]
+            self.pixels = [
+                RandomImage.Pixel(self.seed) for _ in range(RandomImage.SIZE)
+            ]
 
     class Pixel(object):
         def __init__(self, parent_seed):
@@ -44,6 +53,3 @@ class RandomImage(object):
 class Pattern(object):
     def draw(self, *args, **kwargs):
         raise NotImplementedError()
-
-
-

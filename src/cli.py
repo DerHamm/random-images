@@ -3,15 +3,21 @@ import collections.abc
 import time
 import uuid
 
-import src.random_provider
-from src.algos.hammi_xorshift import XorRandom
-from src.algos.native_random import NativeRandom
-from src.algos.collatz_conjecture import CollatzConjectureRandom
-from src.artworks import art, DummyPlot
 from pathlib import Path
-from src.logger import get_logger
-from src.argument_randomizer import create_random_argument_map
 from typing import Union, Optional
+
+from src.artwork.artworks import art
+from src.artwork.dummy_plot import DummyPlot
+
+from .random_provider import Random
+
+from .algos.hammi_xorshift import XorRandom
+from .algos.native_random import NativeRandom
+from .algos.collatz_conjecture import CollatzConjectureRandom
+
+from .logger import get_logger
+from .argument_randomizer import create_random_argument_map
+
 
 
 LOGGER = get_logger(__name__)
@@ -19,7 +25,7 @@ LOGGER = get_logger(__name__)
 
 class Arguments(object):
     def __init__(self):
-        """ Generate an image """
+        """Generate an image"""
         self.generate = None
         """ Generate a gallery of images """
         self.gallery = None
@@ -62,24 +68,31 @@ class Arguments(object):
 
 
 class CommandlineRunner(object):
-    """ Pass sys.argv into this"""
+    """Pass sys.argv into this"""
 
     def __init__(self, *args):
-        parser = argparse.ArgumentParser(description='Random Images CLI', exit_on_error=False)
+        parser = argparse.ArgumentParser(
+            description="Random Images CLI", exit_on_error=False
+        )
 
         subparsers = parser.add_subparsers()
 
-        generate_parser = Generator.add_arguments(subparsers.add_parser('generate', help='Generate some artwork'))
+        generate_parser = Generator.add_arguments(
+            subparsers.add_parser("generate", help="Generate some artwork")
+        )
         generate_parser.set_defaults(generate=self.generate)
 
         gallery_parser = Gallery.add_arguments(
-            subparsers.add_parser('gallery', help='Generate a whole gallery of artworks'))
+            subparsers.add_parser(
+                "gallery", help="Generate a whole gallery of artworks"
+            )
+        )
         gallery_parser.set_defaults(gallery=self.gallery)
 
-        test_parser = subparsers.add_parser('test', help='Run the die hard test suite')
+        test_parser = subparsers.add_parser("test", help="Run the die hard test suite")
         test_parser.set_defaults(test=self.test)
 
-        crush_parser = subparsers.add_parser('crush', help='Run the Big Crush test')
+        crush_parser = subparsers.add_parser("crush", help="Run the Big Crush test")
         crush_parser.set_defaults(crush=self.crush)
 
         self.arguments = Arguments()
@@ -109,10 +122,10 @@ class CommandlineRunner(object):
         return Gallery(self.arguments).execute()
 
     def test(self):
-        raise NotImplementedError('Tests are not implemented yet')
+        raise NotImplementedError("Tests are not implemented yet")
 
     def crush(self):
-        raise NotImplementedError('Tests are not implemented yet')
+        raise NotImplementedError("Tests are not implemented yet")
 
 
 class Command(object):
@@ -129,9 +142,8 @@ class Command(object):
 
 # Executes the generate command
 class Generator(Command):
-
     def execute(self):
-        """ Run the generate command to output an image """
+        """Run the generate command to output an image"""
         random = GeneratorUtils.get_random_number_generator(self)
         save_path = GeneratorUtils.get_save_path(self) / (str(uuid.uuid4()) + ".png")
         self.arguments.count = [1]
@@ -140,13 +152,23 @@ class Generator(Command):
 
     @staticmethod
     def add_arguments(parser):
-        parser.add_argument('artwork', nargs=1, help='(Positional) Name for the artwork')
-        parser.add_argument('--seed', action='store', help='The seed used for the randomness')
-        parser.add_argument('--generator', action='store', help='The random generator to be used')
-        parser.add_argument('--show', action='store_true',
-                            help='Display the image using artworks::IMAGE_VIEW_APPLICATION')
-        parser.add_argument('--output', action='store',
-                            help='Store the image to this path')
+        parser.add_argument(
+            "artwork", nargs=1, help="(Positional) Name for the artwork"
+        )
+        parser.add_argument(
+            "--seed", action="store", help="The seed used for the randomness"
+        )
+        parser.add_argument(
+            "--generator", action="store", help="The random generator to be used"
+        )
+        parser.add_argument(
+            "--show",
+            action="store_true",
+            help="Display the image using artworks::IMAGE_VIEW_APPLICATION",
+        )
+        parser.add_argument(
+            "--output", action="store", help="Store the image to this path"
+        )
         return parser
 
 
@@ -159,22 +181,33 @@ class Gallery(Command):
 
     @staticmethod
     def add_arguments(parser):
-        parser.add_argument('artworks', nargs='+', help='(Positional) Name for the artwork')
-        parser.add_argument('count', nargs=1, help='Count of artworks to be produced', type=int)
-        parser.add_argument('--generator', action='store', help='The random generator to be used')
-        parser.add_argument('--show', action='store_true',
-                            help='Display the image using artworks::IMAGE_VIEW_APPLICATION')
-        parser.add_argument('--seed', action='store',
-                            help='Seed to be used')
-        parser.add_argument('--output', action='store',
-                            help='Store all images to this directory')
+        parser.add_argument(
+            "artworks", nargs="+", help="(Positional) Name for the artwork"
+        )
+        parser.add_argument(
+            "count", nargs=1, help="Count of artworks to be produced", type=int
+        )
+        parser.add_argument(
+            "--generator", action="store", help="The random generator to be used"
+        )
+        parser.add_argument(
+            "--show",
+            action="store_true",
+            help="Display the image using artworks::IMAGE_VIEW_APPLICATION",
+        )
+        parser.add_argument("--seed", action="store", help="Seed to be used")
+        parser.add_argument(
+            "--output", action="store", help="Store all images to this directory"
+        )
         return parser
 
 
 class GeneratorUtils(object):
     @staticmethod
-    def get_random_number_generator(command: Union[Gallery, Generator]) -> src.random_provider.Random:
-        random_class = GeneratorUtils.find_generator_class_by_name(command.arguments.generator)
+    def get_random_number_generator(command: Union[Gallery, Generator]) -> Random:
+        random_class = GeneratorUtils.find_generator_class_by_name(
+            command.arguments.generator
+        )
         random = random_class()
         random.seed(command.arguments.seed)
         return random
@@ -195,18 +228,29 @@ class GeneratorUtils(object):
     def get_save_path(command: Union[Gallery, Generator]) -> Union[str, Path]:
         if command.arguments.output is not None:
             return Path(command.arguments.output)
-        return Path(__file__).parent.parent / Path('img/')
+        return Path(__file__).parent.parent / Path("img/")
 
     @staticmethod
-    def draw_artworks(artworks: collections.abc.Collection, command: Union[Gallery, Generator], random: src.random_provider.Random, save_path: str):
+    def draw_artworks(
+        artworks: collections.abc.Collection,
+        command: Union[Gallery, Generator],
+        random: Random,
+        save_path: str,
+    ):
         if len(artworks) > 0:
-            LOGGER.info('Starting to draw images')
+            LOGGER.info("Starting to draw images")
             now = time.time()
             for _ in range(command.arguments.count):
                 artwork, random_kwargs_generator = random.choice(list(artworks.items()))
-                random_kwargs = {key: get() for key, get in random_kwargs_generator.items()}
+                random_kwargs = {
+                    key: get() for key, get in random_kwargs_generator.items()
+                }
 
-                LOGGER.info('Drawing artwork ({}/{}): {}'.format(_, command.arguments.count, artwork))
+                LOGGER.info(
+                    "Drawing artwork ({}/{}): {}".format(
+                        _, command.arguments.count, artwork
+                    )
+                )
                 img = artwork(rng=random, **random_kwargs)
                 img.draw()
                 if command.arguments.show:
@@ -215,25 +259,31 @@ class GeneratorUtils(object):
                     img.save(save_path)
 
                 random.seed(img.hash)
-            LOGGER.info('Drawing done. Took {}'.format(time.time() - now))
+            LOGGER.info("Drawing done. Took {}".format(time.time() - now))
         else:
             LOGGER.error(
-                'The artwork(s) you search for cannot be found in artworks.py: {}'.format(command.arguments.artwork)
+                "The artwork(s) you search for cannot be found in artworks.py: {}".format(
+                    command.arguments.artwork
+                )
             )
 
     @staticmethod
-    def create_argument_function_mapping(command: Union[Gallery, Generator],
-                                         random: src.random_provider.Random) -> dict:
+    def create_argument_function_mapping(
+        command: Union[Gallery, Generator], random: Random
+    ) -> dict:
         # produce a map of artworks, that holds another map with the keyword argument random functions
         # e.g.:
         # {Artwork: {param1: param1_getter}}
         # where artwork is an Artwork class, param1 is the key string for the parameter and param1_getter is a lambda
         artworks = dict()
-        artwork_arguments = command.arguments.artworks if command.arguments.artworks is not None else [
-            command.arguments.artwork]
+        artwork_arguments = (
+            command.arguments.artworks
+            if command.arguments.artworks is not None
+            else [command.arguments.artwork]
+        )
 
         for artwork in artwork_arguments:
             value = GeneratorUtils.find_artwork_class_by_name(artwork)
             if value is not None:
-                artworks[value] = create_random_argument_map(artwork, random)
+                artworks[value] = create_random_argument_map(value, random)
         return artworks

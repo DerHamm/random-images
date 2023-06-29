@@ -1,17 +1,19 @@
-from src.random_provider import Random
 from time import time
-from src.algos.util_random import handle_seed
 from itertools import cycle
+
+from ..random_provider import Random
+from .util_random import handle_seed
 
 
 class CollatzConjectureRandom(Random):
-    """ Experimental generator based on the collatz conjecture """
+    """Experimental generator based on the collatz conjecture"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.max = 0xFFFF
         self.__seq = None
         self.__origin = None
-        s = kwargs.get('seed')
+        s = kwargs.get("seed")
         if s is None:
             s = time()
         self.seed(s)
@@ -27,8 +29,8 @@ class CollatzConjectureRandom(Random):
 
     @staticmethod
     def __collatz(n):
-        """ Recursively iterate over the given collatz sequence,
-            Finally, return a tuple of the resulting sequence """
+        """Recursively iterate over the given collatz sequence,
+        Finally, return a tuple of the resulting sequence"""
         result = tuple()
         while n != 1:
             if n % 2 != 0:
@@ -37,4 +39,3 @@ class CollatzConjectureRandom(Random):
                 n = n // 2
             result += (n,)
         return result
-
