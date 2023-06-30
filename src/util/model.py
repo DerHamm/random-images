@@ -19,7 +19,7 @@ the image seed, which will be the Images 'theme'.
 class RandomImage(object):
     SIZE = 16
 
-    def __init__(self, seed):
+    def __init__(self, seed) -> None:
         self.seed = md5(seed.encode()).digest()
         random.seed(self.seed, version=1)
         self.theme = (
@@ -32,7 +32,7 @@ class RandomImage(object):
         ]
 
     class Pattern(object):
-        def __init__(self, parent_seed):
+        def __init__(self, parent_seed) -> None:
             self.parent_seed = parent_seed
 
             r = random.random()
@@ -44,12 +44,12 @@ class RandomImage(object):
             ]
 
     class Pixel(object):
-        def __init__(self, parent_seed):
+        def __init__(self, parent_seed) -> None:
             r = str(random.random())
             self.seed = md5(r.encode()).digest()
             self.parent_seed = parent_seed
 
 
 class Pattern(object):
-    def draw(self, *args, **kwargs):
+    def draw(self, *args, **kwargs) -> None:
         raise NotImplementedError()

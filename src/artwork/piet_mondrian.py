@@ -5,7 +5,7 @@ from PIL import ImageDraw
 from .art_utils import hex_to_rgb
 from .artwork import Artwork
 
-from ..random_colors import RandomColors
+from ..util.random_colors import RandomColors
 
 class PietMondrian(Artwork):
     def __init__(
@@ -18,7 +18,7 @@ class PietMondrian(Artwork):
         edge: float = 10,
         *args,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         # iterations for the splitting loop
@@ -54,7 +54,7 @@ class PietMondrian(Artwork):
         self.theme = self.random_color()
         self.chance = chance_for_background_color
 
-    def draw(self):
+    def draw(self) -> None:
         edge = self.edge
         splits = self.splits
         sep = self.sep

@@ -2,13 +2,14 @@ from os import mkdir
 from os.path import isdir
 from pathlib import Path
 
-from src.cli import CommandlineRunner
-from src.logger import get_logger
+from src.util.cli import CommandlineRunner
+from src.util.logger import get_logger
+from src.util.config_loader import ConfigLoader
 
 LOGGER = get_logger(__name__)
 
 
-def setup():
+def setup() -> None:
     if not isdir("img"):
         try:
             mkdir("img")
@@ -18,19 +19,24 @@ def setup():
     return True
 
 
-def cleanup():
+def cleanup() -> None:
     files = list(Path("img").iterdir())
     if len(files) > 10:
         for path in files:
             path.unlink()
 
 
+def init_config() -> None:
+    ConfigLoader().load_config()
+
 """
 Test the generation of an image
 """
 
 
-def main():
+def main() -> None:
+    init_config()
+
     if not setup():
         quit(2)
     cleanup()
@@ -73,8 +79,9 @@ def main():
         "--seed",
         "r0392hr",
     ]
-    cli = CommandlineRunner(*gallery_command_line_arguments)
+    cli = CommandlineRunner(*generate_command_line_arguments3)
     cli.run()
+
 
 
 if __name__ == "__main__":

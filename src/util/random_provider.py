@@ -30,7 +30,7 @@ class Random(object):
     Use the __init__ to set the PRNG
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         _random = None
 
     """
@@ -38,14 +38,14 @@ class Random(object):
     """
 
     def random(self, *args, **kwargs) -> float:
-        raise NotImplementedError()
+        raise NotImplementedError("A concrete subclass of Random has to implement this method")
 
     """
     Seed The random number generator
     """
 
-    def seed(self, a, *args, **kwargs):
-        raise NotImplementedError()
+    def seed(self, a, *args, **kwargs) -> None:
+        raise NotImplementedError("A concrete subclass of Random has to implement this method")
 
     """
     Get a random integer in a range between (min, max)
@@ -58,7 +58,7 @@ class Random(object):
     Shuffle iterable. Uses the native random.shuffle with a lambda to self.random()
     """
 
-    def shuffle(self, x):
+    def shuffle(self, x) -> None:
         shuffle(x, random=self.random)
 
     """
@@ -144,7 +144,7 @@ class Random(object):
     """
     BPF = 53  # Number of bits in a float
 
-    def _randbelow_without_getrandbits(self, n, maxsize=1 << BPF):
+    def _randbelow_without_getrandbits(self, n, maxsize=1 << BPF) -> None:
         """Return a random int in the range [0,n).  Returns 0 if n==0.
 
         The implementation does not use getrandbits, but only random.

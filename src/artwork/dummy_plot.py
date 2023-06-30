@@ -7,10 +7,10 @@ class DummyPlot(Artwork):
     """The dummy plot that one generates when testing out
     how 'random' a PRNG is"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-    def draw(self):
+    def draw(self) -> None:
         draw = ImageDraw.Draw(self.canvas.image)
 
         b, w = (0, 0, 0), (255, 255, 255)

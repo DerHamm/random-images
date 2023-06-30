@@ -5,7 +5,7 @@ from .canvas import Canvas
 
 
 class PillowCanvas(Canvas):
-    def __init__(self, mode: str, size: tuple, color: Union[float, str, tuple] = 0):
+    def __init__(self, mode: str, size: tuple, color: Union[float, str, tuple] = 0) -> None:
         self.image = PillowCanvas.new(mode, size, color=color)
         self._size = size
 
@@ -16,12 +16,12 @@ class PillowCanvas(Canvas):
     def load(self) -> PyAccess:
         return self.image.load()
 
-    def save(self, fp: str, _format: str = None, **kwargs):
+    def save(self, fp: str, _format: str = None, **kwargs) -> None:
         self.image.save(fp, format=_format, **kwargs)
 
     @property
     def size(self) -> tuple:
         return self._size
 
-    def rotate(self, *args, **kwargs):
+    def rotate(self, *args, **kwargs) -> None:
         self.image.rotate(*args, **kwargs)

@@ -1,19 +1,23 @@
+from typing import Any
+
+MESSAGE = "Implement this method in a subclass of Canvas"
+
 class Canvas(object):
     """Canvas needs to implement some image"""
 
     @staticmethod
-    def new(*args, **kwargs):
+    def new(*args, **kwargs) -> Any:
         """Initialize a new image"""
-        raise NotImplementedError()
+        raise NotImplementedError(MESSAGE)
 
-    def load(self):
+    def load(self) -> None:
         """Return the pixel array"""
-        raise NotImplementedError()
+        raise NotImplementedError(MESSAGE)
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         """Save the image to disk"""
-        raise NotImplementedError()
+        raise NotImplementedError(MESSAGE)
 
-    def rotate(self, *args, **kwargs):
+    def rotate(self, *args, **kwargs) -> None:
         """Rotate image"""
-        raise NotImplementedError()
+        raise NotImplementedError(MESSAGE)

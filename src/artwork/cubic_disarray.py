@@ -8,11 +8,11 @@ class CubicDisarray(Artwork):
 
     """ Source: https://generativeartistry.com/tutorials/cubic-disarray/"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-    def draw(self):
-        def _draw(_canvas, width, height):
+    def draw(self) -> None:
+        def _draw(_canvas, width, height) -> None:
             _canvas.rectangle((-width / 2, -height / 2, width, height), fill=(0, 0, 0))
 
         size = 320

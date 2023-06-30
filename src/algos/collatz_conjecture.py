@@ -1,14 +1,14 @@
 from time import time
 from itertools import cycle
 
-from ..random_provider import Random
+from ..util.random_provider import Random
 from .util_random import handle_seed
 
 
 class CollatzConjectureRandom(Random):
     """Experimental generator based on the collatz conjecture"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.max = 0xFFFF
         self.__seq = None
@@ -18,17 +18,17 @@ class CollatzConjectureRandom(Random):
             s = time()
         self.seed(s)
 
-    def random(self, *args, **kwargs):
+    def random(self, *args, **kwargs) -> float:
         x = next(self.__seq) & self.max
         return x / self.max
 
-    def seed(self, a, *args, **kwargs):
+    def seed(self, a, *args, **kwargs) -> None:
         val = handle_seed(a)
         self.__origin = val
         self.__seq = cycle(CollatzConjectureRandom.__collatz(val))
 
     @staticmethod
-    def __collatz(n):
+    def __collatz(n) -> tuple:
         """Recursively iterate over the given collatz sequence,
         Finally, return a tuple of the resulting sequence"""
         result = tuple()

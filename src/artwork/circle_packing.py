@@ -6,7 +6,7 @@ from math import sqrt
 from .art_utils import hex_to_rgb
 from .artwork import Artwork
 
-from ..random_colors import RandomColors
+from ..util.random_colors import RandomColors
 
 
 class CirclePacking(Artwork):
@@ -14,7 +14,7 @@ class CirclePacking(Artwork):
     The code shown there was improved in some ways"""
 
     class Circle(object):
-        def __init__(self, x, y, r):
+        def __init__(self, x, y, r) -> None:
             self.x = x
             self.y = y
             self.radius = r
@@ -29,7 +29,7 @@ class CirclePacking(Artwork):
         line_width: int = 2,
         *args,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self.line_width = line_width
@@ -66,7 +66,7 @@ class CirclePacking(Artwork):
                 circle
             ) or self.__overlap(circle)
 
-    def draw(self):
+    def draw(self) -> None:
         draw = ImageDraw.Draw(self.canvas.image)
         fails = 0
         while True:
@@ -75,7 +75,7 @@ class CirclePacking(Artwork):
             if fails > self.total_fails:
                 break
 
-    def __create_and_draw_circle(self, draw: ImageDraw.ImageDraw):
+    def __create_and_draw_circle(self, draw: ImageDraw.ImageDraw) -> bool:
         new_circle = None
         can_draw = False
         for tries in range(self.create_circle_attempts):
@@ -110,13 +110,13 @@ class CirclePacking(Artwork):
         )
         return True
 
-    def __border_check(self, circle: Circle):
+    def __border_check(self, circle: Circle) -> bool:
         return not (
             0 <= circle.x - circle.radius < circle.x + circle.radius < self.width
             and 0 <= circle.y - circle.radius < circle.y + circle.radius < self.height
         )
 
-    def __overlap(self, circle: Circle):
+    def __overlap(self, circle: Circle) -> bool:
         for other_circle in self.circles:
             a = circle.radius + other_circle.radius
             x = circle.x - other_circle.x
@@ -127,7 +127,7 @@ class CirclePacking(Artwork):
         return False
 
     @staticmethod
-    def __bounding_box(point, radius):
+    def __bounding_box(point, radius) -> list[tuple]:
         return [
             (point[0] - radius, point[1] - radius),
             (point[0] + radius, point[1] + radius),

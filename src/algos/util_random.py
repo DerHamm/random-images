@@ -31,5 +31,4 @@ def md5_to_int(h) -> int:
 
 class SeedException(Exception):
     """Used for any errors in the seed handling"""
-
     pass

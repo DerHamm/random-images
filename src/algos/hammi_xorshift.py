@@ -1,13 +1,13 @@
 from time import time
 
-from ..random_provider import Random
 from .util_random import handle_seed
+from ..util.random_provider import Random
 
 
 class XorRandom(Random):
     _max = 0xFFFFFFFF
 
-    def __init__(self, seed=None):
+    def __init__(self, seed=None) -> None:
         self.x = 123456789
         self.y = 362436069
         self.z = 521288629
@@ -22,7 +22,7 @@ class XorRandom(Random):
         super().__init__()
         self.seed(val)
 
-    def seed(self, a, *args, **kwargs):
+    def seed(self, a, *args, **kwargs)  -> None:
         val = handle_seed(a) & XorRandom._max
 
         self.x = 123456789

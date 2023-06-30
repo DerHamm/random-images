@@ -10,21 +10,19 @@ from src.artwork.artworks import art
 from src.artwork.dummy_plot import DummyPlot
 
 from .random_provider import Random
-
-from .algos.hammi_xorshift import XorRandom
-from .algos.native_random import NativeRandom
-from .algos.collatz_conjecture import CollatzConjectureRandom
-
 from .logger import get_logger
 from .argument_randomizer import create_random_argument_map
 
+from ..algos.hammi_xorshift import XorRandom
+from ..algos.native_random import NativeRandom
+from ..algos.collatz_conjecture import CollatzConjectureRandom
 
 
 LOGGER = get_logger(__name__)
 
 
 class Arguments(object):
-    def __init__(self):
+    def __init__(self) -> None:
         """Generate an image"""
         self.generate = None
         """ Generate a gallery of images """
@@ -55,7 +53,7 @@ class Arguments(object):
         return self._count[0]
 
     @count.setter
-    def count(self, value: int):
+    def count(self, value: int) -> None:
         self._count = value
 
     @property
@@ -63,14 +61,14 @@ class Arguments(object):
         return self._artwork[0]
 
     @artwork.setter
-    def artwork(self, value: str):
+    def artwork(self, value: str) -> None:
         self._artwork = value
 
 
 class CommandlineRunner(object):
     """Pass sys.argv into this"""
 
-    def __init__(self, *args):
+    def __init__(self, *args) -> None:
         parser = argparse.ArgumentParser(
             description="Random Images CLI", exit_on_error=False
         )
@@ -100,7 +98,7 @@ class CommandlineRunner(object):
 
         self.parser = parser
 
-    def run(self):
+    def run(self) -> None:
         if self.arguments.generate:
             self.generate()
         elif self.arguments.gallery:
@@ -112,37 +110,38 @@ class CommandlineRunner(object):
         else:
             self.help()
 
-    def generate(self):
-        return Generator(self.arguments).execute()
+    # TODO: Does this work without return?
+    def generate(self) -> None:
+        Generator(self.arguments).execute()
 
-    def help(self):
+    def help(self) -> None:
         self.parser.print_help()
 
-    def gallery(self):
-        return Gallery(self.arguments).execute()
+    def gallery(self) -> None:
+        Gallery(self.arguments).execute()
 
-    def test(self):
+    def test(self) -> None:
         raise NotImplementedError("Tests are not implemented yet")
 
-    def crush(self):
+    def crush(self) -> None:
         raise NotImplementedError("Tests are not implemented yet")
 
 
 class Command(object):
-    def __init__(self, arguments: Arguments):
+    def __init__(self, arguments: Arguments) -> None:
         self.arguments = arguments
 
     @staticmethod
     def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-        raise NotImplementedError
+        raise NotImplementedError("Concrete Commands have to implement this method")
 
-    def execute(self):
-        raise NotImplementedError
+    def execute(self) -> None:
+        raise NotImplementedError("Concrete Commands have to implement this method")
 
 
 # Executes the generate command
 class Generator(Command):
-    def execute(self):
+    def execute(self) -> None:
         """Run the generate command to output an image"""
         random = GeneratorUtils.get_random_number_generator(self)
         save_path = GeneratorUtils.get_save_path(self) / (str(uuid.uuid4()) + ".png")
@@ -151,7 +150,7 @@ class Generator(Command):
         GeneratorUtils.draw_artworks(artworks, self, random, save_path)
 
     @staticmethod
-    def add_arguments(parser):
+    def add_arguments(parser) -> argparse.ArgumentParser:
         parser.add_argument(
             "artwork", nargs=1, help="(Positional) Name for the artwork"
         )
@@ -173,14 +172,14 @@ class Generator(Command):
 
 
 class Gallery(Command):
-    def execute(self):
+    def execute(self) -> None:
         random = GeneratorUtils.get_random_number_generator(self)
         artworks = GeneratorUtils.create_argument_function_mapping(self, random)
         save_path = GeneratorUtils.get_save_path(self)
         GeneratorUtils.draw_artworks(artworks, self, random, save_path)
 
     @staticmethod
-    def add_arguments(parser):
+    def add_arguments(parser) -> argparse.ArgumentParser:
         parser.add_argument(
             "artworks", nargs="+", help="(Positional) Name for the artwork"
         )
@@ -228,7 +227,7 @@ class GeneratorUtils(object):
     def get_save_path(command: Union[Gallery, Generator]) -> Union[str, Path]:
         if command.arguments.output is not None:
             return Path(command.arguments.output)
-        return Path(__file__).parent.parent / Path("img/")
+        return Path(__file__).parent.parent.parent / Path("img/")
 
     @staticmethod
     def draw_artworks(
@@ -236,11 +235,11 @@ class GeneratorUtils(object):
         command: Union[Gallery, Generator],
         random: Random,
         save_path: str,
-    ):
+    ) -> None:
         if len(artworks) > 0:
             LOGGER.info("Starting to draw images")
             now = time.time()
-            for _ in range(command.arguments.count):
+            for index in range(command.arguments.count):
                 artwork, random_kwargs_generator = random.choice(list(artworks.items()))
                 random_kwargs = {
                     key: get() for key, get in random_kwargs_generator.items()
@@ -248,7 +247,7 @@ class GeneratorUtils(object):
 
                 LOGGER.info(
                     "Drawing artwork ({}/{}): {}".format(
-                        _, command.arguments.count, artwork
+                        index + 1, command.arguments.count, artwork
                     )
                 )
                 img = artwork(rng=random, **random_kwargs)

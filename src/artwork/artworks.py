@@ -1,11 +1,19 @@
-from src.artwork.artwork import Artwork
-from src.artwork.piet_mondrian import PietMondrian
-from src.artwork.coordinate_magics import XorCoords, AddCoords
-
+from .artwork import Artwork
+from .piet_mondrian import PietMondrian
+from .coordinate_magics import (
+    AddCoords,
+    AndCoords,
+    CoordinateMagics,
+    ModCoords,
+    OrCoords,
+    SubCoordsYFromX,
+    XorCoords,
+)
 from .recursive_quads import RecursiveQuads
 from .circle_packing import CirclePacking
+from .cubic_disarray import CubicDisarray
+from .dummy_plot import DummyPlot
 
-from ..logger import get_logger
 
 __all__ = [
     "AddCoords",
@@ -24,8 +32,17 @@ __all__ = [
     "ImageMerge",
 ]
 
-LOGGER = get_logger(__name__)
-
-IMAGE_VIEW_APPLICATION = "paintdotnet"
-
-art = [PietMondrian, XorCoords, RecursiveQuads, CirclePacking, AddCoords, XorCoords]
+art = [
+    AddCoords,
+    AndCoords,
+    CoordinateMagics,
+    ModCoords,
+    OrCoords,
+    PietMondrian,
+    SubCoordsYFromX,
+    XorCoords,
+    RecursiveQuads,
+    DummyPlot,
+    CirclePacking,
+    CubicDisarray,
+]

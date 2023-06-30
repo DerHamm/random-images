@@ -11,10 +11,10 @@ LOGGER = get_logger(__name__)
 
 
 class ImageMerge(object):
-    def __init__(self, directory: Union[str, Path]):
+    def __init__(self, directory: Union[str, Path]) -> None:
         self.directory = Path(directory)
 
-    def merge(self):
+    def merge(self) -> None:
         LOGGER.info("Merging image")
         now = time.time()
 

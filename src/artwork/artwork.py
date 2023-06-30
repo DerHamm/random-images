@@ -7,9 +7,9 @@ from hashlib import md5
 
 from .canvas import Canvas
 from .pillow_canvas import PillowCanvas
-from ..random_provider import Random
+from ..util.random_provider import Random
 
-IMAGE_VIEW_APPLICATION = "paintdotnet"
+from ..util.config_loader import Config
 
 
 class Artwork(object):
@@ -22,7 +22,7 @@ class Artwork(object):
     DEFAULT_COLOR = (255, 255, 255, 255)
     DEFAULT_SIZE = (640, 480)
 
-    def __init__(self, rng, canvas: Canvas = None, default_color=None):
+    def __init__(self, rng, canvas: Canvas = None, default_color=None)  -> None:
         self._canvas = canvas
         self._pixels = None
         self._default_color = default_color
@@ -32,7 +32,7 @@ class Artwork(object):
         )
 
     @property
-    def default_color(self):
+    def default_color(self) -> tuple:
         return (
             self.__class__.DEFAULT_COLOR
             if self._default_color is None
@@ -40,7 +40,7 @@ class Artwork(object):
         )
 
     @default_color.setter
-    def default_color(self, value):
+    def default_color(self, value) -> None:
         self._default_color = value
 
     @property
@@ -57,14 +57,14 @@ class Artwork(object):
             self._pixels = self.canvas.load()
         return self._pixels
 
-    def save(self, path: str = None):
+    def save(self, path: str = None) -> None:
         if path is None:
             path = Path("img/{}.png".format(str(uuid4()))).absolute()
         if Path(path).is_dir():
             path = Path(path) / (str(uuid4()) + ".png")
         return self.canvas.save(path, "PNG")
 
-    def show(self, path: str = None):
+    def show(self, path: str = None) -> None:
         if path is None:
             path = Path("img/{}.png".format(str(uuid4()))).absolute()
         if Path(path).is_dir():
@@ -72,10 +72,10 @@ class Artwork(object):
         self.canvas.save(path)
         Thread(
             target=lambda: system(
-                'start {app} "{path}"'.format(app=IMAGE_VIEW_APPLICATION, path=path)
+                'start {app} "{path}"'.format(app=Config.get_image_view_application(), path=path)
             ),
             daemon=True,
         ).start()
 
-    def draw(self):
+    def draw(self) -> None:
         raise NotImplementedError("Each pattern has to implement it's own unique image")

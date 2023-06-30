@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing
 
 from string import printable, ascii_lowercase, ascii_uppercase, digits, punctuation
@@ -5,19 +6,20 @@ from inspect import signature, Parameter
 
 from .random_provider import Random
 
+# TODO: Implement variable chances
 
 class RandomArgument(object):
     """Pass the application random source into this"""
 
-    def __init__(self, random: Random):
+    def __init__(self, random: Random) -> None:
         self.random = random
 
-    def build(self):
-        raise NotImplementedError
+    def build(self) -> None:
+        raise NotImplementedError("The concrete type subclasses have to implement this method")
 
 
 class BoolArgument(RandomArgument):
-    def __init__(self, random: Random):
+    def __init__(self, random: Random) -> None:
         super().__init__(random)
 
     def build(self) -> typing.Callable:
@@ -25,7 +27,7 @@ class BoolArgument(RandomArgument):
 
 
 class BytesArgument(RandomArgument):
-    def __init__(self, random: Random):
+    def __init__(self, random: Random) -> None:
         super().__init__(random)
 
         self.__min = None
@@ -33,11 +35,11 @@ class BytesArgument(RandomArgument):
         self.__max = None
         self.__max_default = 0xFFFFFFFF
 
-    def min(self, value):
+    def min(self, value) -> BytesArgument:
         self.__min = value
         return self
 
-    def max(self, value):
+    def max(self, value) -> BytesArgument:
         self.__max = value
         return self
 
@@ -45,25 +47,25 @@ class BytesArgument(RandomArgument):
         min_val = self.__min if self.__min is not None else self.__min_default
         max_val = self.__max if self.__max is not None else self.__max_default
 
-        def get():
+        def get() -> bytes:
             return bytes(self.random.randint(min_val, max_val))
 
         return get
 
 
 class FloatArgument(RandomArgument):
-    def __init__(self, random: Random):
+    def __init__(self, random: Random) -> None:
         super().__init__(random)
         self.__min = None
         self.__min_default = 0
         self.__max = None
         self.__max_default = 0xFFFFFFFF
 
-    def min(self, value):
+    def min(self, value) -> FloatArgument:
         self.__min = value
         return self
 
-    def max(self, value):
+    def max(self, value) -> FloatArgument:
         self.__max = value
         return self
 
@@ -71,25 +73,25 @@ class FloatArgument(RandomArgument):
         min_val = self.__min if self.__min is not None else self.__min_default
         max_val = self.__max if self.__max is not None else self.__max_default
 
-        def get():
+        def get() -> float:
             return min_val + self.random.random() * (max_val - min_val)
 
         return get
 
 
 class IntArgument(RandomArgument):
-    def __init__(self, random: Random):
+    def __init__(self, random: Random) -> None:
         super().__init__(random)
         self.__min = None
         self.__min_default = 0
         self.__max = None
         self.__max_default = 0xFFFFFFFF
 
-    def min(self, value):
+    def min(self, value) -> IntArgument:
         self.__min = value
         return self
 
-    def max(self, value):
+    def max(self, value) -> IntArgument:
         self.__max = value
         return self
 
@@ -97,14 +99,14 @@ class IntArgument(RandomArgument):
         min_val = self.__min if self.__min is not None else self.__min_default
         max_val = self.__max if self.__max is not None else self.__max_default
 
-        def get():
+        def get() -> int:
             return self.random.randint(min_val, max_val)
 
         return get
 
 
 class StringArgument(RandomArgument):
-    def __init__(self, random: Random):
+    def __init__(self, random: Random) -> None:
         super().__init__(random)
         self.__length = None
         self.__min = 0
@@ -118,48 +120,48 @@ class StringArgument(RandomArgument):
         self.__source = None
         self.__custom_source = None
 
-    def __random_string(self, n, source):
+    def __random_string(self, n, source) -> str:
         return "".join([self.random.choice(source) for _ in range(n)])
 
-    def printable(self):
+    def printable(self) -> StringArgument:
         return self.lower().upper().punctuation().digits()
 
-    def letters(self):
+    def letters(self) -> StringArgument:
         return self.lower().upper()
 
-    def lower(self):
+    def lower(self) -> StringArgument:
         self.source["lower"] = True
         return self
 
-    def upper(self):
+    def upper(self) -> StringArgument:
         self.source["upper"] = True
         return self
 
-    def punctuation(self):
+    def punctuation(self) -> StringArgument:
         self.source["punctuation"] = True
         return self
 
-    def digits(self):
+    def digits(self) -> StringArgument:
         self.source["digits"] = True
         return self
 
-    def custom_source(self, value):
+    def custom_source(self, value) -> StringArgument:
         self.__custom_source = value
         return self
 
-    def length(self, value):
+    def length(self, value) -> StringArgument:
         self.__length = value
         return self
 
-    def min(self, value):
+    def min(self, value) -> StringArgument:
         self.__min = value
         return self
 
-    def max(self, value):
+    def max(self, value) -> StringArgument:
         self.__max = value
         return self
 
-    def __handle_source(self):
+    def __handle_source(self) -> None:
         source = str()
 
         if self.__custom_source is not None:
@@ -191,7 +193,7 @@ class StringArgument(RandomArgument):
 
 
 # wip, just an experiment rn
-def find_argument(t):
+def find_argument(t) -> RandomArgument:
     return {
         str: StringArgument,
         int: IntArgument,
@@ -205,25 +207,25 @@ def find_argument(t):
 class CollectionArgument(RandomArgument):
     DEFAULT_TYPE = int
 
-    def __init__(self, random: Random, collection_type):
+    def __init__(self, random: Random, collection_type) -> None:
         super().__init__(random)
         self.__collection_type = collection_type
         self._len = 5
         self._types = {}
 
-    def len(self, n):
+    def len(self, n) -> CollectionArgument:
         self._len = n
         return self
 
-    def type(self, t):
+    def type(self, t) -> CollectionArgument:
         self._types[t] = find_argument(t)
         return self
 
-    def add_to_collection(self, collection, param):
-        raise NotImplementedError
+    def add_to_collection(self, collection, param) -> None:
+        raise NotImplementedError("Collection Arguments have to be implemented by a concrete subclass e.g. ListArgument")
 
-    def _build_with_comprehension(self, param):
-        raise NotImplementedError
+    def _build_with_comprehension(self, param) -> None:
+        raise NotImplementedError("Collection Arguments have to be implemented by a concrete subclass e.g. ListArgument")
 
     def build(self) -> typing.Callable:
         if len(self._types) == 0:
@@ -241,55 +243,55 @@ class CollectionArgument(RandomArgument):
 
 
 class ListArgument(CollectionArgument):
-    def __init__(self, random: Random):
+    def __init__(self, random: Random) -> None:
         super().__init__(random, list)
 
-    def _build_with_comprehension(self, functions):
+    def _build_with_comprehension(self, functions) -> list:
         return [self.random.choice(functions)() for _ in range(self._len)]
 
-    def add_to_collection(self, collection, param):
+    def add_to_collection(self, collection, param) -> None:
         collection.append(param)
 
 
 class TupleArgument(CollectionArgument):
-    def __init__(self, random: Random):
+    def __init__(self, random: Random) -> None:
         super().__init__(random, tuple)
 
-    def _build_with_comprehension(self, functions):
+    def _build_with_comprehension(self, functions) -> tuple:
         return (self.random.choice(functions)() for _ in range(self._len))
 
-    def add_to_collection(self, collection, param):
+    def add_to_collection(self, collection, param) -> tuple:
         return collection + (param,)
 
 
 class SetArgument(CollectionArgument):
-    def __init__(self, random: Random):
+    def __init__(self, random: Random) -> None:
         super().__init__(random, set)
 
-    def _build_with_comprehension(self, functions):
+    def _build_with_comprehension(self, functions) -> set:
         return {self.random.choice(functions)() for _ in range(self._len)}
 
-    def add_to_collection(self, collection, param):
+    def add_to_collection(self, collection, param) -> set:
         collection.add(param)
         return collection
 
 
 class DictArgument(CollectionArgument):
     class KeyArgument(RandomArgument):
-        def __init__(self, random: Random):
+        def __init__(self, random: Random) -> None:
             super().__init__(random)
 
-        def build(self):
+        def build(self) -> None:
             pass
 
     class ValueArgument(RandomArgument):
         def __init__(self, random: Random):
             super().__init__(random)
 
-        def build(self):
+        def build(self) -> None:
             pass
 
-    def __init__(self, random: Random):
+    def __init__(self, random: Random) -> None:
         super().__init__(random, set)
         self.__string_generator = StringArgument(self.random).min(4).max(8).build()
         self.__key_types = dict()
@@ -323,7 +325,7 @@ class DictArgument(CollectionArgument):
 
         return get
 
-    def _build_with_comprehension(self, functions):
+    def _build_with_comprehension(self, functions) -> dict:
         key_args = functions[0]
         value_args = functions[1]
 
@@ -332,15 +334,15 @@ class DictArgument(CollectionArgument):
             for _ in range(self._len)
         }
 
-    def add_to_collection(self, collection, param):
+    def add_to_collection(self, collection, param) -> dict:
         collection[self.__string_generator()] = param
         return collection
 
-    def key_type(self, t):
+    def key_type(self, t) -> DictArgument:
         self.__key_types[t] = find_argument(t)
         return self
 
-    def value_type(self, t):
+    def value_type(self, t) -> DictArgument:
         self.__value_types[t] = find_argument(t)
         return self
 
@@ -348,7 +350,7 @@ class DictArgument(CollectionArgument):
 class RandomArguments(object):
     """Pass the application random source into this"""
 
-    def __init__(self, random: Random):
+    def __init__(self, random: Random) -> None:
         self.random = random
 
     def int(self) -> IntArgument:
@@ -379,7 +381,7 @@ class RandomArguments(object):
         return DictArgument(self.random)
 
 
-def create_random_argument_map(class_object: type, rng: Random):
+def create_random_argument_map(class_object: type, rng: Random) -> dict[str, typing.Any]:
     sig = signature(class_object.__init__)
     parameters = sig.parameters
     arguments = {}
